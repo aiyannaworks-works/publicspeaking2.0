@@ -8,6 +8,8 @@ import RhythmLab from "@/components/RhythmLab";
 import DailyGames from "@/components/DailyGames";
 import Progress from "@/components/Progress";
 
+export const dynamic = "force-dynamic";
+
 type Tab = "home" | "rhythm" | "games" | "progress";
 
 const purple = "#667eea";
