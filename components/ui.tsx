@@ -5,7 +5,6 @@ const green = "#10b981";
 const red = "#ef4444";
 
 // ── Button ────────────────────────────────────────────────────────────────────
-
 type Variant = "primary" | "secondary" | "success" | "danger";
 
 export function Btn({
@@ -55,7 +54,6 @@ export function Btn({
 }
 
 // ── Badge ─────────────────────────────────────────────────────────────────────
-
 type BadgeColor = "success" | "warning" | "info";
 
 export function Badge({
@@ -88,7 +86,6 @@ export function Badge({
 }
 
 // ── FeedbackRow ───────────────────────────────────────────────────────────────
-
 export function FeedbackRow({
   label,
   value,
@@ -115,7 +112,6 @@ export function FeedbackRow({
 }
 
 // ── RecordButton ──────────────────────────────────────────────────────────────
-
 export function RecordButton({
   recording,
   onClick,
@@ -149,7 +145,6 @@ export function RecordButton({
 }
 
 // ── Timer display ─────────────────────────────────────────────────────────────
-
 export function TimerDisplay({ seconds }: { seconds: number }) {
   const m = Math.floor(seconds / 60);
   const s = String(seconds % 60).padStart(2, "0");
@@ -163,7 +158,6 @@ export function TimerDisplay({ seconds }: { seconds: number }) {
 }
 
 // ── StatCard ──────────────────────────────────────────────────────────────────
-
 export function StatCard({
   label,
   value,

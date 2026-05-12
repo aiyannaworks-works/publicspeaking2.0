@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { Session, UserData } from "@/lib/types";
-import Onboarding from "./Onboarding";
-import Dashboard from "./Dashboard";
-import RhythmLab from "./RhythmLab";
-import DailyGames from "./DailyGames";
-import Progress from "./Progress";
+import Onboarding from "@/components/Onboarding";
+import Dashboard from "@/components/Dashboard";
+import RhythmLab from "@/components/RhythmLab";
+import DailyGames from "@/components/DailyGames";
+import Progress from "@/components/Progress";
 
 type Tab = "home" | "rhythm" | "games" | "progress";
+
+const purple = "#667eea";
 
 export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
@@ -79,8 +81,6 @@ export default function App() {
     </div>
   );
 }
-
-const purple = "#667eea";
 
 const styles = {
   wrap: {

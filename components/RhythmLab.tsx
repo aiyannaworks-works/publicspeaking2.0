@@ -130,9 +130,9 @@ export default function RhythmLab({
               <li>Slow down a bit – aim for 130–150 WPM</li>
             )}
             {result.fillerWords > 8 && (
-              <li>Practise eliminating filler words like "um", "uh", and "like"</li>
+              <li>Practise eliminating filler words like &quot;um&quot;, &quot;uh&quot;, and &quot;like&quot;</li>
             )}
-            {result.avgPause < "0.5" && (
+            {parseFloat(result.avgPause) < 0.5 && (
               <li>Add more strategic pauses to let your ideas breathe</li>
             )}
             <li>Great job! Keep practising daily for best results</li>
