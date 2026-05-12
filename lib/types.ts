@@ -23,4 +23,29 @@ export interface UserData {
   goal: string;
   experience: string;
   baseline: SpeechAnalysis;
+  xp: number;
+  level: number;
+  streak: number;
+  dailyGoalXp: number;
+  todayXp: number;
+  lastActiveDate: string;
+  language: "en" | "es" | "fr" | "de";
+  friends: Friend[];
+}
+
+export interface Friend {
+  id: string;
+  name: string;
+  xp: number;
+  level: number;
+  streak: number;
+  avatar?: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt?: string;
 }

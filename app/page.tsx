@@ -16,20 +16,31 @@ export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [streak, setStreak] = useState(0);
 
   const addSession = (sess: Omit<Session, "id">) => {
     const newSession: Session = { id: Date.now(), ...sess };
-    setSessions((prev) => {
-      const last = prev[prev.length - 1];
-      if (
-        !last ||
-        new Date(last.date).toDateString() !== new Date().toDateString()
-      ) {
-        setStreak((n) => n + 1);
-      }
-      return [...prev, newSession];
-    });
+    const xpGained = 50; // Base XP for any session
+
+    setSessions((prev) => [...prev, newSession]);
+    
+    if (user) {
+      const isNewDay = user.lastActiveDate !== new Date().toDateString();
+      setUser(prev => {
+        if (!prev) return null;
+        const newTodayXp = isNewDay ? xpGained : prev.todayXp + xpGained;
+        const newTotalXp = prev.xp + xpGained;
+        const newLevel = Math.floor(newTotalXp / 500) + 1;
+        
+        return {
+          ...prev,
+          xp: newTotalXp,
+          level: newLevel,
+          todayXp: newTodayXp,
+          streak: isNewDay ? prev.streak + 1 : prev.streak,
+          lastActiveDate: new Date().toDateString(),
+        };
+      });
+    }
   };
 
   const NAV: { id: Tab; label: string }[] = [
@@ -43,19 +54,40 @@ export default function App() {
     <div style={styles.wrap}>
       {/* Header */}
       <header style={styles.header}>
-        <span style={styles.logo}>🎯 Confidence & Competence</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+          <span style={styles.logo}>🎯 Confidence & Competence</span>
+          {user && (
+            <div style={styles.statsBar}>
+              <span title="Streak">🔥 {user.streak}</span>
+              <span title="Level">⭐ Lvl {user.level}</span>
+              <span title="XP">💎 {user.xp} XP</span>
+            </div>
+          )}
+        </div>
         {user && (
-          <nav style={styles.nav}>
-            {NAV.map(({ id, label }) => (
-              <button
-                key={id}
-                style={styles.tab(tab === id)}
-                onClick={() => setTab(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
+          <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+            <nav style={styles.nav}>
+              {NAV.map(({ id, label }) => (
+                <button
+                  key={id}
+                  style={styles.tab(tab === id)}
+                  onClick={() => setTab(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </nav>
+            <select 
+              value={user.language} 
+              onChange={(e) => setUser({...user, language: e.target.value as any})}
+              style={styles.langSelect}
+            >
+              <option value="en">🇺🇸 EN</option>
+              <option value="es">🇪🇸 ES</option>
+              <option value="fr">🇫🇷 FR</option>
+              <option value="de">🇩🇪 DE</option>
+            </select>
+          </div>
         )}
       </header>
 
@@ -69,7 +101,7 @@ export default function App() {
             }}
           />
         ) : tab === "home" ? (
-          <Dashboard sessions={sessions} streak={streak} />
+          <Dashboard sessions={sessions} user={user} />
         ) : tab === "rhythm" ? (
           <RhythmLab addSession={addSession} />
         ) : tab === "games" ? (
@@ -84,10 +116,10 @@ export default function App() {
 
 const styles = {
   wrap: {
-    background: "linear-gradient(135deg,#667eea,#764ba2)",
+    background: "#fff",
     minHeight: "100vh",
     padding: 20,
-    fontFamily: "inherit",
+    fontFamily: "'din-round', 'proxima-nova', sans-serif",
   } as React.CSSProperties,
   header: {
     display: "flex",
@@ -104,7 +136,17 @@ const styles = {
   logo: {
     fontSize: 20,
     fontWeight: 700,
-    color: purple,
+    color: "#58cc02", // Duolingo Green
+  } as React.CSSProperties,
+  statsBar: {
+    display: "flex",
+    gap: 12,
+    fontSize: 15,
+    fontWeight: 700,
+    color: "#4b4b4b",
+    background: "#f7f7f7",
+    padding: "6px 12px",
+    borderRadius: 12,
   } as React.CSSProperties,
   nav: {
     display: "flex",
@@ -114,14 +156,25 @@ const styles = {
   tab: (active: boolean): React.CSSProperties => ({
     padding: "8px 16px",
     border: "none",
-    borderRadius: 8,
+    borderRadius: 12,
+    borderBottom: active ? "4px solid #1899D6" : "4px solid #e5e5e5",
     cursor: "pointer",
     fontSize: 14,
-    fontWeight: 600,
-    background: active ? purple : "#f0f0f0",
-    color: active ? "#fff" : "#333",
-    transition: "all .2s",
+    fontWeight: 700,
+    background: active ? "#1CB0F6" : "#fff",
+    color: active ? "#fff" : "#777",
+    transition: "all .1s",
+    transform: active ? "translateY(2px)" : "none",
   }),
+  langSelect: {
+    padding: "8px 12px",
+    borderRadius: 12,
+    border: "2px solid #e5e5e5",
+    fontWeight: 700,
+    color: "#4b4b4b",
+    cursor: "pointer",
+    outline: "none",
+  } as React.CSSProperties,
   card: {
     background: "#fff",
     borderRadius: 14,

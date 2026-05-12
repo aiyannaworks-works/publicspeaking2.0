@@ -32,7 +32,22 @@ export default function Onboarding({
   };
 
   const finish = () =>
-    onComplete({ ...form, baseline: analyzeSpeech(time) });
+    onComplete({
+      ...form,
+      baseline: analyzeSpeech(time),
+      xp: 0,
+      level: 1,
+      streak: 0,
+      dailyGoalXp: 50,
+      todayXp: 0,
+      lastActiveDate: new Date().toDateString(),
+      language: "en",
+      friends: [
+        { id: "1", name: "Duo", xp: 1250, level: 12, streak: 45 },
+        { id: "2", name: "Lily", xp: 840, level: 8, streak: 12 },
+        { id: "3", name: "Zari", xp: 2100, level: 21, streak: 102 }
+      ],
+    });
 
   if (step === 1)
     return (

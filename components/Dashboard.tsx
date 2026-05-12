@@ -1,15 +1,18 @@
 "use client";
 
-import { Session } from "@/lib/types";
+import { Session, UserData } from "@/lib/types";
 import { StatCard, FeedbackRow } from "./ui";
+import Leaderboard from "./Leaderboard";
 
 export default function Dashboard({
   sessions,
-  streak,
+  user,
 }: {
   sessions: Session[];
-  streak: number;
+  user: UserData;
 }) {
+  const streak = user.streak;
+  const xpProgress = (user.todayXp / user.dailyGoalXp) * 100;
   const last30 = sessions.slice(-30);
   const avgConfidence = last30.length
     ? Math.round(
@@ -35,19 +38,27 @@ export default function Dashboard({
         Your Dashboard
       </h1>
 
-      {/* Streak */}
-      <div
-        style={{
-          textAlign: "center",
-          padding: 28,
-          background: "linear-gradient(135deg,#fbbf24,#f59e0b)",
-          color: "#fff",
-          borderRadius: 12,
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ fontSize: 44, fontWeight: 700 }}>🔥 {streak}</div>
-        <div style={{ fontWeight: 600 }}>Day Streak</div>
+      {/* Gamification Progress */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <h3 style={{ fontWeight: 700, color: "#4b4b4b" }}>Daily Goal Progress</h3>
+          <span style={{ fontWeight: 700, color: "#58cc02" }}>{user.todayXp} / {user.dailyGoalXp} XP</span>
+        </div>
+        <div style={{ 
+          width: "100%", 
+          height: 24, 
+          background: "#e5e5e5", 
+          borderRadius: 12, 
+          overflow: "hidden",
+          borderBottom: "4px solid #d0d0d0"
+        }}>
+          <div style={{ 
+            width: `${Math.min(xpProgress, 100)}%`, 
+            height: "100%", 
+            background: "#58cc02",
+            transition: "width 0.5s ease-out"
+          }} />
+        </div>
       </div>
 
       {/* Stats */}
@@ -59,11 +70,13 @@ export default function Dashboard({
           marginBottom: 24,
         }}
       >
+        <StatCard label="Current Streak" value={streak} sub="days 🔥" />
         <StatCard label="Speech Fitness" value={avgConfidence} sub="30-day avg" />
-        <StatCard label="Total Sessions" value={sessions.length} sub="All time" />
-        <StatCard label="Filler Rate" value={fillerRate} sub="per min" />
-        <StatCard label="This Week" value={thisWeek} sub="sessions" />
+        <StatCard label="Level" value={user.level} sub="Speaking Master" />
+        <StatCard label="Total XP" value={user.xp} sub="All time 💎" />
       </div>
+
+      <Leaderboard user={user} />
 
       {/* Insights */}
       {sessions.length > 0 ? (

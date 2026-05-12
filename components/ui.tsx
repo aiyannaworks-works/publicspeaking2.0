@@ -20,15 +20,14 @@ export function Btn({
   disabled?: boolean;
   style?: React.CSSProperties;
 }) {
-  const bg =
-    variant === "primary"
-      ? purple
-      : variant === "success"
-      ? green
-      : variant === "danger"
-      ? red
-      : "#f0f0f0";
-  const color = variant === "secondary" ? "#333" : "#fff";
+  const colors = {
+    primary: { bg: "#1cb0f6", border: "#1899d6", text: "#fff" },
+    success: { bg: "#58cc02", border: "#46a302", text: "#fff" },
+    danger: { bg: "#ff4b4b", border: "#d33131", text: "#fff" },
+    secondary: { bg: "#fff", border: "#e5e5e5", text: "#afafaf" },
+  };
+  const theme = colors[variant];
+  
   return (
     <button
       onClick={onClick}
@@ -36,16 +35,31 @@ export function Btn({
       style={{
         padding: "12px 28px",
         border: "none",
-        borderRadius: 10,
+        borderRadius: 16,
         fontSize: 15,
-        fontWeight: 600,
+        fontWeight: 800,
         cursor: disabled ? "not-allowed" : "pointer",
         margin: 4,
-        background: bg,
-        color,
+        background: theme.bg,
+        color: theme.text,
+        borderBottom: `4px solid ${theme.border}`,
         opacity: disabled ? 0.5 : 1,
-        transition: "all .2s",
+        transition: "all .1s",
+        textTransform: "uppercase",
+        letterSpacing: "0.8px",
         ...style,
+      }}
+      onMouseDown={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = "translateY(2px)";
+          e.currentTarget.style.borderBottomWidth = "2px";
+        }
+      }}
+      onMouseUp={(e) => {
+        if (!disabled) {
+          e.currentTarget.style.transform = "none";
+          e.currentTarget.style.borderBottomWidth = "4px";
+        }
       }}
     >
       {children}
@@ -123,23 +137,28 @@ export function RecordButton({
     <button
       onClick={onClick}
       style={{
-        width: 96,
-        height: 96,
+        width: 120,
+        height: 120,
         borderRadius: "50%",
         border: "none",
-        background: recording ? "#dc2626" : red,
+        background: recording ? "#ff4b4b" : "#1cb0f6",
         color: "#fff",
-        fontSize: 14,
-        fontWeight: 700,
+        fontSize: 16,
+        fontWeight: 800,
         cursor: "pointer",
         margin: "0 auto",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        animation: recording ? "pulse 1.5s infinite" : "none",
+        boxShadow: recording ? "0 0 0 8px rgba(255, 75, 75, 0.2)" : "0 0 0 8px rgba(28, 176, 246, 0.2)",
+        transition: "all 0.2s",
+        borderBottom: `6px solid ${recording ? "#d33131" : "#1899d6"}`,
+        textTransform: "uppercase",
       }}
     >
-      {recording ? "⏹ Stop" : "🎤 Start"}
+      <span style={{ fontSize: 32, marginBottom: 4 }}>{recording ? "⏹" : "🎤"}</span>
+      {recording ? "Stop" : "Start"}
     </button>
   );
 }
@@ -170,18 +189,20 @@ export function StatCard({
   return (
     <div
       style={{
-        background: "linear-gradient(135deg,#667eea,#764ba2)",
-        color: "#fff",
+        background: "#fff",
+        color: "#4b4b4b",
         padding: 20,
-        borderRadius: 12,
+        borderRadius: 16,
         textAlign: "center",
+        border: "2px solid #e5e5e5",
+        borderBottom: "4px solid #e5e5e5",
       }}
     >
-      <div style={{ fontSize: 12, opacity: 0.85 }}>{label}</div>
-      <div style={{ fontSize: 32, fontWeight: 700, margin: "6px 0" }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#afafaf", textTransform: "uppercase" }}>{label}</div>
+      <div style={{ fontSize: 32, fontWeight: 800, margin: "8px 0", color: "#4b4b4b" }}>
         {value}
       </div>
-      {sub && <div style={{ fontSize: 12, opacity: 0.85 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 13, fontWeight: 700, color: "#afafaf" }}>{sub}</div>}
     </div>
   );
 }
