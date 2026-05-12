@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { storage } from "@/lib/storage";
 import { Session, UserData } from "@/lib/types";
 import Onboarding from "@/components/Onboarding";
 import Dashboard from "@/components/Dashboard";
@@ -16,6 +17,33 @@ export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedUser = storage.getUser();
+    const savedSessions = storage.getSessions();
+    
+    if (savedUser) {
+      setUser(savedUser);
+      setSessions(savedSessions);
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Auto-save user data whenever it changes
+  useEffect(() => {
+    if (user) {
+      storage.saveUser(user);
+    }
+  }, [user]);
+
+  // Auto-save sessions whenever they change
+  useEffect(() => {
+    if (sessions.length > 0) {
+      storage.saveSessions(sessions);
+    }
+  }, [sessions]);
 
   const addSession = (sess: Omit<Session, "id">) => {
     const newSession: Session = { id: Date.now(), ...sess };
@@ -49,6 +77,17 @@ export default function App() {
     { id: "games", label: "Daily Games" },
     { id: "progress", label: "Progress" },
   ];
+
+  if (isLoading) {
+    return (
+      <div style={{ ...styles.wrap, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
+          <p style={{ color: "#afafaf", fontWeight: 700 }}>Loading your progress...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.wrap}>
