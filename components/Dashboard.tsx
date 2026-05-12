@@ -78,6 +78,14 @@ export default function Dashboard({
 
       <Leaderboard user={user} />
 
+      {/* Compete Card */}
+      <div style={styles.competeCard}>
+        <div>
+          <h3 style={styles.competeTitle}>🏆 Compete with Friends</h3>
+          <p style={styles.competeText}>Join the Weekly League and climb the ranks. Check the Social tab to see who's leading!</p>
+        </div>
+      </div>
+
       {/* Insights */}
       {sessions.length > 0 ? (
         <div
@@ -111,3 +119,24 @@ export default function Dashboard({
     </div>
   );
 }
+
+const styles = {
+  competeCard: {
+    background: "linear-gradient(135deg, #fff9f0, #fff)",
+    border: "3px solid #d97e3a",
+    borderRadius: 12,
+    padding: 24,
+    marginTop: 32,
+  } as React.CSSProperties,
+  competeTitle: {
+    fontSize: 20,
+    fontWeight: 800,
+    color: "#2a2a2a",
+    marginBottom: 8,
+  } as React.CSSProperties,
+  competeText: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 1.6,
+  } as React.CSSProperties,
+};

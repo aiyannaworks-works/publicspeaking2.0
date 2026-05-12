@@ -8,9 +8,11 @@ import Dashboard from "@/components/Dashboard";
 import RhythmLab from "@/components/RhythmLab";
 import DailyGames from "@/components/DailyGames";
 import Progress from "@/components/Progress";
+import Social from "@/components/Social";
+import Achievements from "@/components/Achievements";
 import { RewardAnimation } from "@/components/RewardAnimation";
 
-type Tab = "home" | "rhythm" | "games" | "progress";
+type Tab = "home" | "rhythm" | "games" | "progress" | "social" | "achievements";
 
 const purple = "#667eea";
 
@@ -81,6 +83,8 @@ export default function App() {
     { id: "rhythm", label: "Rhythm Lab" },
     { id: "games", label: "Daily Games" },
     { id: "progress", label: "Progress" },
+    { id: "social", label: "Social" },
+    { id: "achievements", label: "Achievements" },
   ];
 
   if (isLoading) {
@@ -151,8 +155,12 @@ export default function App() {
           <RhythmLab addSession={addSession} />
         ) : tab === "games" ? (
           <DailyGames addSession={addSession} />
-        ) : (
+        ) : tab === "progress" ? (
           <Progress sessions={sessions} />
+        ) : tab === "social" ? (
+          <Social user={user} />
+        ) : (
+          <Achievements user={user} />
         )}
       </main>
     </div>
