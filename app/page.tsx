@@ -86,10 +86,10 @@ export default function App() {
   if (isLoading) {
     return (
       <div style={{ ...styles.wrap, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
-          <p style={{ color: "#afafaf", fontWeight: 700 }}>Loading your progress...</p>
-        </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>💬</div>
+            <p style={{ color: "#666", fontWeight: 700 }}>Loading your progress...</p>
+          </div>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function App() {
       {/* Header */}
       <header style={styles.header}>
         <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-          <span style={styles.logo}>🎯 Confidence & Competence</span>
+          <span style={styles.logo}>Articulate</span>
           {user && (
             <div style={styles.statsBar}>
               <span title="Streak">🔥 {user.streak}</span>

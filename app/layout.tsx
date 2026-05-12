@@ -5,10 +5,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Confidence & Competence - Master Public Speaking",
-  description: "Gamified public speaking trainer. Earn XP, compete with friends, and build confidence through interactive practice.",
+  title: "Articulate - Master Public Speaking",
+  description: "Gamified public speaking trainer. Earn XP, compete with friends, and master the art of articulate communication.",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-  themeColor: "#1cb0f6",
+  themeColor: "#d97e3a",
 };
 
 export default function RootLayout({

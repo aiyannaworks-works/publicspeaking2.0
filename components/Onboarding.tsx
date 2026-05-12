@@ -54,7 +54,7 @@ export default function Onboarding({
       <div style={{ textAlign: "center", padding: "60px 20px", animation: "slideInUp 0.5s ease-out" }}>
         <div style={{ fontSize: 80, marginBottom: 24, animation: "bounce 1s ease-in-out infinite" }}>🎯</div>
         <h1 style={{ fontSize: 48, fontWeight: 900, color: "#2a2a2a", marginBottom: 12, letterSpacing: "-1px", fontFamily: "'Syne', sans-serif" }}>
-          Master Public Speaking
+          Articulate
         </h1>
         <p
           style={{
@@ -66,7 +66,7 @@ export default function Onboarding({
             fontWeight: 700,
           }}
         >
-          Gamified. Competitive. Effective.
+          Master the Art of Speaking
         </p>
         <p
           style={{
