@@ -8,6 +8,7 @@ import Dashboard from "@/components/Dashboard";
 import RhythmLab from "@/components/RhythmLab";
 import DailyGames from "@/components/DailyGames";
 import Progress from "@/components/Progress";
+import { RewardAnimation } from "@/components/RewardAnimation";
 
 type Tab = "home" | "rhythm" | "games" | "progress";
 
@@ -18,6 +19,8 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("home");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showReward, setShowReward] = useState(false);
+  const [lastXpGain, setLastXpGain] = useState(0);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -50,6 +53,8 @@ export default function App() {
     const xpGained = 50; // Base XP for any session
 
     setSessions((prev) => [...prev, newSession]);
+    setLastXpGain(xpGained);
+    setShowReward(true);
     
     if (user) {
       const isNewDay = user.lastActiveDate !== new Date().toDateString();
@@ -131,7 +136,8 @@ export default function App() {
       </header>
 
       {/* Main content */}
-      <main style={styles.card}>
+      <main style={{...styles.card, animation: "fadeIn 0.3s ease-out"}}>
+        {showReward && <RewardAnimation xpGained={lastXpGain} />}
         {!user ? (
           <Onboarding
             onComplete={(u) => {
