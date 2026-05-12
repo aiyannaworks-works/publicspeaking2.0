@@ -53,20 +53,32 @@ export default function Onboarding({
     return (
       <div style={{ textAlign: "center", padding: "60px 20px", animation: "slideInUp 0.5s ease-out" }}>
         <div style={{ fontSize: 80, marginBottom: 24, animation: "bounce 1s ease-in-out infinite" }}>🎯</div>
-        <h1 style={{ fontSize: 36, fontWeight: 800, color: "#1cb0f6", marginBottom: 16, letterSpacing: "-0.5px" }}>
-          Confidence & Competence
+        <h1 style={{ fontSize: 48, fontWeight: 900, color: "#2a2a2a", marginBottom: 12, letterSpacing: "-1px", fontFamily: "'Syne', sans-serif" }}>
+          Master Public Speaking
         </h1>
         <p
           style={{
-            color: "#afafaf",
-            fontSize: 18,
-            lineHeight: 1.8,
+            color: "#d97e3a",
+            fontSize: 20,
+            lineHeight: 1.6,
             maxWidth: 540,
             margin: "0 auto 32px",
-            fontWeight: 500,
+            fontWeight: 700,
           }}
         >
-          Master public speaking through gamified practice. Earn XP, compete with friends, and become a confident communicator.
+          Gamified. Competitive. Effective.
+        </p>
+        <p
+          style={{
+            color: "#666",
+            fontSize: 16,
+            lineHeight: 1.8,
+            maxWidth: 540,
+            margin: "0 auto 40px",
+            fontWeight: 400,
+          }}
+        >
+          Earn XP, compete with friends, and transform your speaking skills through interactive practice.
         </p>
         <Btn onClick={() => setStep(2)}>Get Started →</Btn>
       </div>
@@ -163,8 +175,8 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ marginBottom: 24, animation: "slideInUp 0.4s ease-out" }}>
-      <label style={{ display: "block", fontWeight: 700, marginBottom: 8, color: "#4b4b4b", fontSize: 15 }}>
+    <div style={{ marginBottom: 28, animation: "slideInUp 0.4s ease-out" }}>
+      <label style={{ display: "block", fontWeight: 700, marginBottom: 10, color: "#2a2a2a", fontSize: 14, textTransform: "uppercase", letterSpacing: "0.5px" }}>
         {label}
       </label>
       {children}
@@ -175,11 +187,11 @@ function Field({
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: 14,
-  border: "2px solid #e5e5e5",
-  borderRadius: 12,
+  border: "2px solid #e0e0e0",
+  borderRadius: 8,
   fontSize: 15,
   fontWeight: 500,
   transition: "all 0.2s",
   outline: "none",
-  backgroundColor: "#f7f7f7",
+  backgroundColor: "#fafaf8",
 };
