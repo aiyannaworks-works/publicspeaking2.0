@@ -5,8 +5,8 @@ import { Session } from "@/lib/types";
 import { PITCH_TOPICS, WORD_BANK, analyzeSpeech } from "@/lib/utils";
 import { Btn, RecordButton, TimerDisplay } from "./ui";
 
-const purple = "#667eea";
-const green = "#10b981";
+const orange = "#d97e3a";
+const green = "#6ba045";
 
 type Game = "sprint" | "pitch" | null;
 type Phase =
@@ -180,7 +180,7 @@ export default function DailyGames({
             style={{
               fontSize: 52,
               fontWeight: 700,
-              color: purple,
+              color: orange,
               marginBottom: 8,
             }}
           >
@@ -191,7 +191,7 @@ export default function DailyGames({
               fontSize: 48,
               fontWeight: 700,
               padding: 36,
-              color: purple,
+              color: orange,
               minHeight: 120,
               display: "flex",
               alignItems: "center",
@@ -222,7 +222,7 @@ export default function DailyGames({
     // done
     return (
       <div style={{ textAlign: "center" }}>
-        <h1 style={{ color: purple, marginBottom: 16 }}>Game Complete! 🎉</h1>
+        <h1 style={{ color: orange, marginBottom: 16 }}>Game Complete! 🎉</h1>
         <div
           style={{
             fontSize: 28,
@@ -236,7 +236,7 @@ export default function DailyGames({
         <div
           style={{
             padding: 24,
-            background: "#f0f9ff",
+            background: "#fff9f0",
             borderRadius: 12,
             marginBottom: 20,
             fontSize: 17,
@@ -272,10 +272,10 @@ export default function DailyGames({
             padding: 24,
             borderRadius: 12,
             marginBottom: 20,
-            borderLeft: `4px solid ${purple}`,
+            borderLeft: `4px solid ${orange}`,
           }}
         >
-          <div style={{ color: purple, fontWeight: 600, marginBottom: 8 }}>
+          <div style={{ color: orange, fontWeight: 600, marginBottom: 8 }}>
             Your Topic:
           </div>
           <div style={{ fontSize: 24, fontWeight: 700 }}>{topic}</div>
@@ -304,7 +304,7 @@ export default function DailyGames({
           style={{
             fontSize: 52,
             fontWeight: 700,
-            color: purple,
+            color: orange,
             marginBottom: 20,
           }}
         >
@@ -318,11 +318,11 @@ export default function DailyGames({
   // complete
   return (
     <div style={{ textAlign: "center" }}>
-      <h1 style={{ color: purple, marginBottom: 16 }}>Pitch Complete! 🎉</h1>
+      <h1 style={{ color: orange, marginBottom: 16 }}>Pitch Complete! 🎉</h1>
       <div
         style={{
           padding: 24,
-          background: "#f0f9ff",
+          background: "#fff9f0",
           borderRadius: 12,
           marginBottom: 20,
         }}
@@ -359,18 +359,18 @@ function GameCard({
       onMouseLeave={() => setHovered(false)}
       style={{
         background: "#fff",
-        border: `2px solid ${hovered ? purple : "#e0e0e0"}`,
+        border: `2px solid ${hovered ? orange : "#e0e0e0"}`,
         borderRadius: 12,
         padding: 24,
         cursor: "pointer",
         transition: "border-color .2s",
       }}
     >
-      <h3 style={{ color: purple, marginBottom: 8, fontSize: 18 }}>{title}</h3>
+      <h3 style={{ color: orange, marginBottom: 8, fontSize: 18 }}>{title}</h3>
       <p style={{ color: "#666", lineHeight: 1.6, marginBottom: 14 }}>
         {description}
       </p>
-      <div style={{ fontWeight: 700, color: purple }}>Click to Start →</div>
+      <div style={{ fontWeight: 700, color: orange }}>Click to Start →</div>
     </div>
   );
 }

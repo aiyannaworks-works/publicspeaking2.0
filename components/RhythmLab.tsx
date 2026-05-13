@@ -5,7 +5,7 @@ import { Session } from "@/lib/types";
 import { DRILLS, analyzeSpeech } from "@/lib/utils";
 import { Btn, Badge, FeedbackRow, RecordButton, TimerDisplay } from "./ui";
 
-const purple = "#667eea";
+const orange = "#d97e3a";
 
 export default function RhythmLab({
   addSession,
@@ -78,19 +78,19 @@ export default function RhythmLab({
   if (result)
     return (
       <div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: purple, marginBottom: 20 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: orange, marginBottom: 20 }}>
           Practice Complete! 🎉
         </h1>
         <div
           style={{
-            background: "#f0f9ff",
-            borderLeft: "4px solid #3b82f6",
+            background: "#fff9f0",
+            borderLeft: "4px solid #d97e3a",
             padding: 20,
             borderRadius: 8,
             marginBottom: 20,
           }}
         >
-          <h4 style={{ color: "#3b82f6", marginBottom: 10 }}>
+          <h4 style={{ color: orange, marginBottom: 10 }}>
             Performance Analysis
           </h4>
           <FeedbackRow
@@ -115,13 +115,13 @@ export default function RhythmLab({
         </div>
         <div
           style={{
-            background: "#f0f9ff",
+            background: "#fff9f0",
             borderRadius: 12,
             padding: 20,
             marginBottom: 20,
           }}
         >
-          <h4 style={{ color: purple, marginBottom: 10 }}>💡 Personalised Tips</h4>
+          <h4 style={{ color: orange, marginBottom: 10 }}>💡 Personalised Tips</h4>
           <ul style={{ paddingLeft: 20, lineHeight: 1.9 }}>
             {result.pace < 130 && (
               <li>Try speaking slightly faster – aim for 130–150 WPM</li>
@@ -158,10 +158,10 @@ export default function RhythmLab({
           padding: 24,
           borderRadius: 12,
           marginBottom: 20,
-          borderLeft: `4px solid ${purple}`,
+          borderLeft: `4px solid ${orange}`,
         }}
       >
-        <div style={{ color: purple, fontWeight: 600, marginBottom: 10 }}>
+        <div style={{ color: orange, fontWeight: 600, marginBottom: 10 }}>
           Your Prompt:
         </div>
         <div style={{ fontSize: 16, lineHeight: 1.8 }}>{drill.prompt}</div>

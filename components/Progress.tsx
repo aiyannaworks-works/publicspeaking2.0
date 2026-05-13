@@ -3,7 +3,7 @@
 import { Session } from "@/lib/types";
 import { Badge, StatCard } from "./ui";
 
-const purple = "#667eea";
+const orange = "#d97e3a";
 
 export default function Progress({ sessions }: { sessions: Session[] }) {
   const last30 = sessions.slice(-30);
@@ -28,7 +28,7 @@ export default function Progress({ sessions }: { sessions: Session[] }) {
 
       {/* Fitness score ring */}
       <div style={{ textAlign: "center", marginBottom: 36 }}>
-        <h2 style={{ color: purple, marginBottom: 16 }}>
+        <h2 style={{ color: orange, marginBottom: 16 }}>
           Speech Fitness Score
         </h2>
         <div
@@ -37,7 +37,7 @@ export default function Progress({ sessions }: { sessions: Session[] }) {
             height: 180,
             borderRadius: "50%",
             margin: "0 auto 16px",
-            background: `conic-gradient(${purple} ${pct}deg, #e0e0e0 ${pct}deg)`,
+            background: `conic-gradient(${orange} ${pct}deg, #e0e0e0 ${pct}deg)`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -55,7 +55,7 @@ export default function Progress({ sessions }: { sessions: Session[] }) {
               justifyContent: "center",
             }}
           >
-            <div style={{ fontSize: 44, fontWeight: 700, color: purple }}>
+            <div style={{ fontSize: 44, fontWeight: 700, color: orange }}>
               {score}
             </div>
             <div style={{ fontSize: 13, color: "#666" }}>out of 100</div>
@@ -116,7 +116,7 @@ export default function Progress({ sessions }: { sessions: Session[] }) {
               >
                 <div>
                   <div
-                    style={{ color: purple, fontWeight: 700, marginBottom: 4 }}
+                    style={{ color: orange, fontWeight: 700, marginBottom: 4 }}
                   >
                     {sess.type === "rhythm-lab" && `🎯 ${sess.drillName}`}
                     {sess.type === "word-sprint" && "⚡ Word Sprint"}
