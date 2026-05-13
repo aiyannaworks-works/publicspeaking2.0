@@ -24,13 +24,38 @@ export default function App() {
   const [showReward, setShowReward] = useState(false);
   const [lastXpGain, setLastXpGain] = useState(0);
 
-  // Load data from localStorage on mount
+  // Load data from localStorage on mount and detect new day
   useEffect(() => {
     const savedUser = storage.getUser();
     const savedSessions = storage.getSessions();
     
     if (savedUser) {
-      setUser(savedUser);
+      const today = new Date().toDateString();
+      const lastActive = savedUser.lastActiveDate;
+      const isNewDay = lastActive !== today;
+      
+      if (isNewDay) {
+        // Calculate if streak should be broken (more than 1 day gap)
+        const lastDate = new Date(lastActive);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // If more than 1 day has passed, break the streak
+        const newStreak = daysDiff === 1 ? savedUser.streak : 0;
+        
+        const updatedUser = {
+          ...savedUser,
+          todayXp: 0,
+          lastActiveDate: today,
+          streak: newStreak,
+        };
+        
+        setUser(updatedUser);
+        storage.saveUser(updatedUser);
+      } else {
+        setUser(savedUser);
+      }
+      
       setSessions(savedSessions);
     }
     setIsLoading(false);
