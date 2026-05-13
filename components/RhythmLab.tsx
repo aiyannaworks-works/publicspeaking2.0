@@ -200,7 +200,7 @@ function DrillCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(135deg,#667eea,#764ba2)",
+        background: "linear-gradient(135deg,#d97e3a,#c96f2e)",
         color: "#fff",
         padding: 28,
         borderRadius: 12,

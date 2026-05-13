@@ -98,10 +98,12 @@ export default function App() {
     );
   }
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
-    <div style={styles.wrap}>
+    <div style={{...styles.wrap, ...(isMobile ? styles.wrapMobile : {})}}>
       {/* Header */}
-      <header style={styles.header}>
+      <header style={{...styles.header, marginBottom: isMobile ? 20 : 40, paddingBottom: isMobile ? 12 : 20}}>
         <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
           <span style={styles.logo}>Articulate</span>
           {user && (
@@ -140,7 +142,7 @@ export default function App() {
       </header>
 
       {/* Main content */}
-      <main style={{...styles.card, animation: "fadeIn 0.3s ease-out"}}>
+      <main style={{...styles.card, ...(isMobile ? styles.cardMobile : {}), animation: "fadeIn 0.3s ease-out"}}>
         {showReward && <RewardAnimation xpGained={lastXpGain} />}
         {!user ? (
           <Onboarding
@@ -174,6 +176,9 @@ const styles = {
     padding: "40px 20px",
     maxWidth: 1200,
     margin: "0 auto",
+  } as React.CSSProperties,
+  wrapMobile: {
+    padding: "20px 12px",
   } as React.CSSProperties,
   header: {
     display: "flex",
@@ -237,5 +242,10 @@ const styles = {
     padding: 40,
     border: "2px solid #e0e0e0",
     minHeight: 500,
+  } as React.CSSProperties,
+  cardMobile: {
+    padding: 20,
+    borderRadius: 10,
+    minHeight: 400,
   } as React.CSSProperties,
 };
