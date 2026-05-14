@@ -69,15 +69,16 @@ export default function Social({ user }: { user: UserData }) {
       {/* Add Friends */}
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>Add Friends</h2>
-        <div style={styles.addFriendsBox}>
+        <p style={styles.subtitle}>Invite friends to compete and grow together!</p>
+        <div style={styles.addFriendsContainer}>
           <input 
             type="text" 
             placeholder="Search by username or email..." 
-            style={styles.searchInput}
+            style={styles.searchInputLarge}
           />
-          <button style={styles.searchBtn}>Search</button>
+          <button style={styles.searchBtnLarge}>Search</button>
         </div>
-        <p style={styles.friendHint}>Invite friends to compete and grow together!</p>
+        <p style={styles.friendHint}>💡 When you add real friends, they'll appear here with their progress!</p>
       </div>
     </div>
   );
@@ -190,6 +191,12 @@ const styles = {
     gap: 12,
     marginBottom: 16,
   } as React.CSSProperties,
+  addFriendsContainer: {
+    display: "flex",
+    gap: 12,
+    marginBottom: 16,
+    flexDirection: "column" as const,
+  } as React.CSSProperties,
   searchInput: {
     flex: 1,
     padding: 12,
@@ -197,6 +204,17 @@ const styles = {
     borderRadius: 8,
     fontSize: 14,
     fontFamily: "'Poppins', sans-serif",
+  } as React.CSSProperties,
+  searchInputLarge: {
+    padding: 18,
+    border: "3px solid #d97e3a",
+    borderRadius: 12,
+    fontSize: 16,
+    fontWeight: 500,
+    fontFamily: "'Poppins', sans-serif",
+    background: "#fff",
+    color: "#2a2a2a",
+    transition: "all 0.2s",
   } as React.CSSProperties,
   searchBtn: {
     padding: "12px 24px",
@@ -211,9 +229,25 @@ const styles = {
     letterSpacing: "0.5px",
     transition: "all 0.2s",
   } as React.CSSProperties,
+  searchBtnLarge: {
+    padding: "16px 32px",
+    background: "#d97e3a",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    fontWeight: 800,
+    cursor: "pointer",
+    fontSize: 16,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.5px",
+    transition: "all 0.2s",
+    boxShadow: "0 4px 12px rgba(217, 126, 58, 0.2)",
+  } as React.CSSProperties,
   friendHint: {
-    fontSize: 13,
-    color: "#999",
-    fontStyle: "italic",
+    fontSize: 14,
+    color: "#666",
+    fontStyle: "normal",
+    marginTop: 12,
+    lineHeight: 1.6,
   } as React.CSSProperties,
 };
