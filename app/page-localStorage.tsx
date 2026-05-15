@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { storage } from "@/lib/storage";
 import { Session, UserData } from "@/lib/types";
 import { getTranslation, Language } from "@/lib/translations";
-import { getCurrentUserProfile, getWeeklyLeaderboard, addSessionRecord, getWeekStart } from "@/lib/auth-context";
-import AuthSupabase from "@/components/AuthSupabase";
+import Onboarding from "@/components/Onboarding";
 import Dashboard from "@/components/Dashboard";
 import RhythmLab from "@/components/RhythmLab";
 import DailyGames from "@/components/DailyGames";
@@ -16,11 +15,10 @@ import { RewardAnimation } from "@/components/RewardAnimation";
 
 type Tab = "home" | "rhythm" | "games" | "progress" | "social" | "achievements";
 
-const supabase = createClient();
+const purple = "#667eea";
 
 export default function App() {
   const [user, setUser] = useState<UserData | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,101 +28,82 @@ export default function App() {
 
   const t = (key: string) => getTranslation(language, key);
 
-  // Check if user is logged in on mount
+  // Load data from localStorage on mount and detect new day
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        if (data.session?.user) {
-          setUserId(data.session.user.id);
-          const { profile } = await getCurrentUserProfile(data.session.user.id);
-          if (profile) {
-            setLanguage(profile.language || "en");
-            const userData: UserData = {
-              name: profile.full_name || "",
-              goal: "",
-              experience: "",
-              baseline: 0,
-              xp: profile.xp || 0,
-              level: profile.level || 1,
-              streak: profile.streak || 0,
-              dailyGoalXp: 50,
-              todayXp: 0,
-              lastActiveDate: profile.last_active_date || new Date().toDateString(),
-              language: profile.language || "en",
-              friends: [],
-            };
-            setUser(userData);
-          }
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-      } finally {
-        setIsLoading(false);
+    const savedUser = storage.getUser();
+    const savedSessions = storage.getSessions();
+    
+    if (savedUser) {
+      setLanguage(savedUser.language as Language);
+      const today = new Date().toDateString();
+      const lastActive = savedUser.lastActiveDate;
+      const isNewDay = lastActive !== today;
+      
+      if (isNewDay) {
+        // Calculate if streak should be broken (more than 1 day gap)
+        const lastDate = new Date(lastActive);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // If more than 1 day has passed, break the streak
+        const newStreak = daysDiff === 1 ? savedUser.streak : 0;
+        
+        const updatedUser = {
+          ...savedUser,
+          todayXp: 0,
+          lastActiveDate: today,
+          streak: newStreak,
+        };
+        
+        setUser(updatedUser);
+        storage.saveUser(updatedUser);
+      } else {
+        setUser(savedUser);
       }
-    };
-
-    checkAuth();
+      
+      setSessions(savedSessions);
+    }
+    setIsLoading(false);
   }, []);
 
-  const handleAuthSuccess = async (newUserId: string, profile: any) => {
-    setUserId(newUserId);
-    setLanguage(profile.language || "en");
-    const userData: UserData = {
-      name: profile.full_name || "",
-      goal: "",
-      experience: "",
-      baseline: 0,
-      xp: profile.xp || 0,
-      level: profile.level || 1,
-      streak: profile.streak || 0,
-      dailyGoalXp: 50,
-      todayXp: 0,
-      lastActiveDate: profile.last_active_date || new Date().toDateString(),
-      language: profile.language || "en",
-      friends: [],
-    };
-    setUser(userData);
-    setTab("home");
-  };
+  // Auto-save user data whenever it changes
+  useEffect(() => {
+    if (user) {
+      storage.saveUser(user);
+    }
+  }, [user]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setUserId(null);
-    setSessions([]);
-  };
+  // Auto-save sessions whenever they change
+  useEffect(() => {
+    if (sessions.length > 0) {
+      storage.saveSessions(sessions);
+    }
+  }, [sessions]);
 
-  const addSession = async (sess: Omit<Session, "id">) => {
-    if (!userId) return;
-
+  const addSession = (sess: Omit<Session, "id">) => {
     const newSession: Session = { id: Date.now(), ...sess };
-    const xpGained = 50;
+    const xpGained = 50; // Base XP for any session
 
     setSessions((prev) => [...prev, newSession]);
     setLastXpGain(xpGained);
     setShowReward(true);
-
-    // Save to Supabase
-    await addSessionRecord(userId, {
-      type: sess.type,
-      drill_id: sess.type,
-      drill_name: sess.type,
-      xp_gained: xpGained,
-    });
-
-    // Update local user state
+    
     if (user) {
-      const newTotalXp = user.xp + xpGained;
-      const newLevel = Math.floor(newTotalXp / 500) + 1;
-
-      setUser({
-        ...user,
-        xp: newTotalXp,
-        level: newLevel,
-        todayXp: user.todayXp + xpGained,
+      const isNewDay = user.lastActiveDate !== new Date().toDateString();
+      setUser(prev => {
+        if (!prev) return null;
+        const newTodayXp = isNewDay ? xpGained : prev.todayXp + xpGained;
+        const newTotalXp = prev.xp + xpGained;
+        const newLevel = Math.floor(newTotalXp / 500) + 1;
+        
+        return {
+          ...prev,
+          xp: newTotalXp,
+          level: newLevel,
+          todayXp: newTodayXp,
+          streak: isNewDay ? prev.streak + 1 : prev.streak,
+          lastActiveDate: new Date().toDateString(),
+        };
       });
     }
   };
@@ -141,24 +120,20 @@ export default function App() {
   if (isLoading) {
     return (
       <div style={{ ...styles.wrap, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>💬</div>
-          <p style={{ color: "#666", fontWeight: 700 }}>Loading your progress...</p>
-        </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>💬</div>
+            <p style={{ color: "#666", fontWeight: 700 }}>Loading your progress...</p>
+          </div>
       </div>
     );
   }
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
-  if (!user) {
-    return <AuthSupabase onAuthSuccess={handleAuthSuccess} t={t} />;
-  }
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   return (
-    <div style={{ ...styles.wrap, ...(isMobile ? styles.wrapMobile : {}) }}>
+    <div style={{...styles.wrap, ...(isMobile ? styles.wrapMobile : {})}}>
       {/* Header */}
-      <header style={{ ...styles.header, marginBottom: isMobile ? 20 : 40, paddingBottom: isMobile ? 12 : 20 }}>
+      <header style={{...styles.header, marginBottom: isMobile ? 20 : 40, paddingBottom: isMobile ? 12 : 20}}>
         <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
           <span style={styles.logo}>Articulate</span>
           {user && (
@@ -173,16 +148,21 @@ export default function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
             <nav style={styles.nav}>
               {NAV.map(({ id, label }) => (
-                <button key={id} style={styles.tab(tab === id)} onClick={() => setTab(id)}>
+                <button
+                  key={id}
+                  style={styles.tab(tab === id)}
+                  onClick={() => setTab(id)}
+                >
                   {label}
                 </button>
               ))}
             </nav>
-            <select
-              value={language}
+            <select 
+              value={language} 
               onChange={(e) => {
                 const newLang = e.target.value as Language;
                 setLanguage(newLang);
+                setUser({...user, language: newLang});
               }}
               style={styles.langSelect}
             >
@@ -191,17 +171,24 @@ export default function App() {
               <option value="fr">🇫🇷 FR</option>
               <option value="de">🇩🇪 DE</option>
             </select>
-            <button onClick={handleSignOut} style={styles.signOutBtn}>
-              Sign Out
-            </button>
           </div>
         )}
       </header>
 
       {/* Main content */}
-      <main style={{ ...styles.card, ...(isMobile ? styles.cardMobile : {}), animation: "fadeIn 0.3s ease-out" }}>
+      <main style={{...styles.card, ...(isMobile ? styles.cardMobile : {}), animation: "fadeIn 0.3s ease-out"}}>
         {showReward && <RewardAnimation xpGained={lastXpGain} />}
-        {tab === "home" ? (
+        {!user ? (
+          <Onboarding
+            onComplete={(u) => {
+              setUser(u);
+              setLanguage(u.language as Language);
+              setTab("home");
+            }}
+            language={language}
+            t={t}
+          />
+        ) : tab === "home" ? (
           <Dashboard sessions={sessions} user={user} />
         ) : tab === "rhythm" ? (
           <RhythmLab addSession={addSession} />
@@ -275,36 +262,27 @@ const styles = {
     letterSpacing: "0.5px",
   }),
   langSelect: {
-    padding: "10px 12px",
-    border: "2px solid #e0e0e0",
+    padding: "10px 14px",
     borderRadius: 8,
-    fontSize: 13,
+    border: "2px solid #e0e0e0",
     fontWeight: 700,
-    cursor: "pointer",
-    background: "#fff",
     color: "#2a2a2a",
-  } as React.CSSProperties,
-  signOutBtn: {
-    padding: "10px 18px",
-    border: "2px solid #e0e0e0",
-    borderRadius: 8,
     cursor: "pointer",
+    outline: "none",
     fontSize: 13,
-    fontWeight: 700,
-    background: "#fff",
-    color: "#d32f2f",
-    transition: "all 0.2s",
     textTransform: "uppercase" as const,
     letterSpacing: "0.5px",
   } as React.CSSProperties,
   card: {
     background: "#fff",
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 40,
     border: "2px solid #e0e0e0",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    minHeight: 500,
   } as React.CSSProperties,
   cardMobile: {
     padding: 20,
+    borderRadius: 10,
+    minHeight: 400,
   } as React.CSSProperties,
 };

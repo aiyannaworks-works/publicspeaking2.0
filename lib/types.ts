@@ -22,7 +22,7 @@ export interface UserData {
   name: string;
   goal: string;
   experience: string;
-  baseline: SpeechAnalysis;
+  baseline?: SpeechAnalysis | number;
   xp: number;
   level: number;
   streak: number;
