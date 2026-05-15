@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { UserData } from "@/lib/types";
+import { Language } from "@/lib/translations";
 import { analyzeSpeech } from "@/lib/utils";
 import { Btn, RecordButton, TimerDisplay } from "./ui";
 
@@ -9,8 +10,12 @@ const purple = "#667eea";
 
 export default function Onboarding({
   onComplete,
+  language = "en",
+  t = (key: string) => key,
 }: {
   onComplete: (u: UserData) => void;
+  language?: Language;
+  t?: (key: string) => string;
 }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ name: "", goal: "", experience: "" });
@@ -41,7 +46,7 @@ export default function Onboarding({
       dailyGoalXp: 50,
       todayXp: 0,
       lastActiveDate: new Date().toDateString(),
-      language: "en",
+      language: language,
       friends: [
         { id: "1", name: "Duo", xp: 1250, level: 12, streak: 45 },
         { id: "2", name: "Lily", xp: 840, level: 8, streak: 12 },

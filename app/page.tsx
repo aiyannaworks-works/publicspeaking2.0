@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { storage } from "@/lib/storage";
 import { Session, UserData } from "@/lib/types";
+import { getTranslation, Language } from "@/lib/translations";
 import Onboarding from "@/components/Onboarding";
 import Dashboard from "@/components/Dashboard";
 import RhythmLab from "@/components/RhythmLab";
@@ -23,6 +24,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [showReward, setShowReward] = useState(false);
   const [lastXpGain, setLastXpGain] = useState(0);
+  const [language, setLanguage] = useState<Language>("en");
+
+  const t = (key: string) => getTranslation(language, key);
 
   // Load data from localStorage on mount and detect new day
   useEffect(() => {
@@ -30,6 +34,7 @@ export default function App() {
     const savedSessions = storage.getSessions();
     
     if (savedUser) {
+      setLanguage(savedUser.language as Language);
       const today = new Date().toDateString();
       const lastActive = savedUser.lastActiveDate;
       const isNewDay = lastActive !== today;
@@ -104,12 +109,12 @@ export default function App() {
   };
 
   const NAV: { id: Tab; label: string }[] = [
-    { id: "home", label: "Dashboard" },
-    { id: "rhythm", label: "Rhythm Lab" },
-    { id: "games", label: "Daily Games" },
-    { id: "progress", label: "Progress" },
-    { id: "social", label: "Social" },
-    { id: "achievements", label: "Achievements" },
+    { id: "home", label: t("nav.dashboard") },
+    { id: "rhythm", label: t("nav.rhythmlab") },
+    { id: "games", label: t("nav.dailygames") },
+    { id: "progress", label: t("nav.progress") },
+    { id: "social", label: t("nav.social") },
+    { id: "achievements", label: t("nav.achievements") },
   ];
 
   if (isLoading) {
@@ -153,8 +158,12 @@ export default function App() {
               ))}
             </nav>
             <select 
-              value={user.language} 
-              onChange={(e) => setUser({...user, language: e.target.value as any})}
+              value={language} 
+              onChange={(e) => {
+                const newLang = e.target.value as Language;
+                setLanguage(newLang);
+                setUser({...user, language: newLang});
+              }}
               style={styles.langSelect}
             >
               <option value="en">🇺🇸 EN</option>
@@ -173,8 +182,11 @@ export default function App() {
           <Onboarding
             onComplete={(u) => {
               setUser(u);
+              setLanguage(u.language as Language);
               setTab("home");
             }}
+            language={language}
+            t={t}
           />
         ) : tab === "home" ? (
           <Dashboard sessions={sessions} user={user} />
