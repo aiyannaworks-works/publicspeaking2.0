@@ -1,11 +1,33 @@
 import React from "react";
 
-const purple = "#667eea";
-const green = "#10b981";
-const red = "#ef4444";
+// ─────────────────────────────────────────────
+// Design tokens (mirrors CSS custom properties)
+// ─────────────────────────────────────────────
+const T = {
+  orange:       "#E8732A",
+  orangeDark:   "#C45E1A",
+  orangeLight:  "#FFF0E6",
+  green:        "#5A9E3A",
+  greenDark:    "#437A2A",
+  greenLight:   "#EBF5E6",
+  ink:          "#1A1A1A",
+  ink2:         "#3D3D3D",
+  ink3:         "#6B6B6B",
+  ink4:         "#9E9E9E",
+  border:       "#E8E8E8",
+  borderStrong: "#D0D0D0",
+  surface:      "#F7F7F5",
+  white:        "#FFFFFF",
+  error:        "#D93025",
+  errorBg:      "#FEE8E6",
+  info:         "#1A73E8",
+  infoBg:       "#E8F0FE",
+} as const;
 
-// ── Button ────────────────────────────────────────────────────────────────────
-type Variant = "primary" | "secondary" | "success" | "danger";
+// ─────────────────────────────────────────────
+// Btn
+// ─────────────────────────────────────────────
+type Variant = "primary" | "secondary" | "success" | "danger" | "ghost";
 
 export function Btn({
   children,
@@ -13,53 +35,86 @@ export function Btn({
   onClick,
   disabled,
   style,
+  fullWidth,
 }: {
   children: React.ReactNode;
   variant?: Variant;
   onClick?: () => void;
   disabled?: boolean;
   style?: React.CSSProperties;
+  fullWidth?: boolean;
 }) {
-  const colors = {
-    primary: { bg: "#1cb0f6", border: "#1899d6", text: "#fff" },
-    success: { bg: "#58cc02", border: "#46a302", text: "#fff" },
-    danger: { bg: "#ff4b4b", border: "#d33131", text: "#fff" },
-    secondary: { bg: "#fff", border: "#e5e5e5", text: "#afafaf" },
+  const themes: Record<Variant, React.CSSProperties> = {
+    primary: {
+      background: T.orange,
+      color: "#fff",
+      boxShadow: disabled ? "none" : "0 2px 8px rgba(232,115,42,0.30)",
+    },
+    success: {
+      background: T.green,
+      color: "#fff",
+      boxShadow: disabled ? "none" : "0 2px 8px rgba(90,158,58,0.30)",
+    },
+    danger: {
+      background: T.error,
+      color: "#fff",
+    },
+    secondary: {
+      background: T.white,
+      color: T.ink2,
+      border: `1.5px solid ${T.border}`,
+      boxShadow: "none",
+    },
+    ghost: {
+      background: "transparent",
+      color: T.orange,
+      border: `1.5px solid ${T.orange}`,
+      boxShadow: "none",
+    },
   };
-  const theme = colors[variant];
-  
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       style={{
-        padding: "12px 28px",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontWeight: 700,
+        fontSize: 14,
+        letterSpacing: "0.01em",
+        padding: "13px 28px",
+        borderRadius: 9999,
         border: "none",
-        borderRadius: 16,
-        fontSize: 15,
-        fontWeight: 800,
         cursor: disabled ? "not-allowed" : "pointer",
-        margin: 4,
-        background: theme.bg,
-        color: theme.text,
-        borderBottom: `4px solid ${theme.border}`,
-        opacity: disabled ? 0.5 : 1,
-        transition: "all .1s",
-        textTransform: "uppercase",
-        letterSpacing: "0.8px",
+        opacity: disabled ? 0.45 : 1,
+        transition: "all 0.18s cubic-bezier(0.4,0,0.2,1)",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        whiteSpace: "nowrap",
+        width: fullWidth ? "100%" : undefined,
+        ...themes[variant],
         ...style,
       }}
+      onMouseEnter={(e) => {
+        if (disabled) return;
+        e.currentTarget.style.transform = "translateY(-1px)";
+        e.currentTarget.style.filter = "brightness(0.93)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "none";
+        e.currentTarget.style.filter = "none";
+      }}
       onMouseDown={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.transform = "translateY(2px)";
-          e.currentTarget.style.borderBottomWidth = "2px";
-        }
+        if (disabled) return;
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.filter = "brightness(0.88)";
       }}
       onMouseUp={(e) => {
-        if (!disabled) {
-          e.currentTarget.style.transform = "none";
-          e.currentTarget.style.borderBottomWidth = "4px";
-        }
+        if (disabled) return;
+        e.currentTarget.style.transform = "translateY(-1px)";
+        e.currentTarget.style.filter = "brightness(0.93)";
       }}
     >
       {children}
@@ -67,8 +122,10 @@ export function Btn({
   );
 }
 
-// ── Badge ─────────────────────────────────────────────────────────────────────
-type BadgeColor = "success" | "warning" | "info";
+// ─────────────────────────────────────────────
+// Badge / Pill
+// ─────────────────────────────────────────────
+type BadgeColor = "success" | "warning" | "info" | "orange" | "neutral";
 
 export function Badge({
   children,
@@ -78,20 +135,26 @@ export function Badge({
   color?: BadgeColor;
 }) {
   const map: Record<BadgeColor, { bg: string; fg: string }> = {
-    success: { bg: "#d1fae5", fg: "#065f46" },
-    warning: { bg: "#fef3c7", fg: "#92400e" },
-    info: { bg: "#dbeafe", fg: "#1e40af" },
+    success: { bg: T.greenLight,  fg: T.greenDark },
+    warning: { bg: "#FFF8E1",     fg: "#8B5E00" },
+    info:    { bg: T.infoBg,      fg: T.info },
+    orange:  { bg: T.orangeLight, fg: T.orangeDark },
+    neutral: { bg: T.surface,     fg: T.ink3 },
   };
+  const { bg, fg } = map[color];
   return (
     <span
       style={{
-        display: "inline-block",
+        display: "inline-flex",
+        alignItems: "center",
         padding: "4px 12px",
-        borderRadius: 20,
+        borderRadius: 9999,
         fontSize: 12,
-        fontWeight: 600,
-        background: map[color].bg,
-        color: map[color].fg,
+        fontWeight: 700,
+        letterSpacing: "0.02em",
+        background: bg,
+        color: fg,
+        whiteSpace: "nowrap",
       }}
     >
       {children}
@@ -99,7 +162,9 @@ export function Badge({
   );
 }
 
-// ── FeedbackRow ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// FeedbackRow
+// ─────────────────────────────────────────────
 export function FeedbackRow({
   label,
   value,
@@ -115,17 +180,19 @@ export function FeedbackRow({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "10px 0",
-        borderBottom: "1px solid #e0e0e0",
+        padding: "11px 0",
+        borderBottom: `1px solid ${T.border}`,
       }}
     >
-      <span>{label}</span>
+      <span style={{ fontSize: 14, color: T.ink2, fontWeight: 500 }}>{label}</span>
       <Badge color={color}>{value}</Badge>
     </div>
   );
 }
 
-// ── RecordButton ──────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// RecordButton
+// ─────────────────────────────────────────────
 export function RecordButton({
   recording,
   onClick,
@@ -137,72 +204,179 @@ export function RecordButton({
     <button
       onClick={onClick}
       style={{
-        width: 120,
-        height: 120,
+        width: 112,
+        height: 112,
         borderRadius: "50%",
         border: "none",
-        background: recording ? "#ff4b4b" : "#1cb0f6",
+        background: recording
+          ? `radial-gradient(circle at 35% 35%, #FF6B6B, ${T.error})`
+          : `radial-gradient(circle at 35% 35%, ${T.orangeLight === "#FFF0E6" ? "#FFAB76" : T.orangeLight}, ${T.orange})`,
         color: "#fff",
-        fontSize: 16,
-        fontWeight: 800,
+        fontSize: 13,
+        fontWeight: 700,
         cursor: "pointer",
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: recording ? "0 0 0 8px rgba(255, 75, 75, 0.2)" : "0 0 0 8px rgba(28, 176, 246, 0.2)",
-        transition: "all 0.2s",
-        borderBottom: `6px solid ${recording ? "#d33131" : "#1899d6"}`,
-        textTransform: "uppercase",
+        gap: 4,
+        boxShadow: recording
+          ? "0 0 0 10px rgba(217,48,37,0.12), 0 8px 24px rgba(217,48,37,0.30)"
+          : `0 0 0 10px rgba(232,115,42,0.12), 0 8px 24px rgba(232,115,42,0.30)`,
+        transition: "all 0.25s cubic-bezier(0.4,0,0.2,1)",
+        animation: recording ? "pulse 1.8s ease-in-out infinite" : "none",
+        letterSpacing: "0.04em",
+        textTransform: "uppercase" as const,
       }}
     >
-      <span style={{ fontSize: 32, marginBottom: 4 }}>{recording ? "⏹" : "🎤"}</span>
-      {recording ? "Stop" : "Start"}
+      <span style={{ fontSize: 30, lineHeight: 1 }}>{recording ? "⏹" : "🎤"}</span>
+      <span style={{ fontSize: 11, fontWeight: 800 }}>{recording ? "Stop" : "Start"}</span>
     </button>
   );
 }
 
-// ── Timer display ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// TimerDisplay
+// ─────────────────────────────────────────────
 export function TimerDisplay({ seconds }: { seconds: number }) {
   const m = Math.floor(seconds / 60);
   const s = String(seconds % 60).padStart(2, "0");
   return (
     <div
-      style={{ fontSize: 22, fontWeight: 700, color: purple, marginTop: 16 }}
+      style={{
+        fontSize: 36,
+        fontWeight: 800,
+        color: T.orange,
+        marginTop: 20,
+        fontFamily: "'Bricolage Grotesque', sans-serif",
+        letterSpacing: "-0.03em",
+        fontVariantNumeric: "tabular-nums",
+      }}
     >
       {m}:{s}
     </div>
   );
 }
 
-// ── StatCard ──────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// StatCard
+// ─────────────────────────────────────────────
 export function StatCard({
   label,
   value,
   sub,
+  accent,
 }: {
   label: string;
   value: string | number;
   sub?: string;
+  accent?: "orange" | "green";
 }) {
+  const accentColor = accent === "green" ? T.green : T.orange;
   return (
     <div
       style={{
-        background: "#fff",
-        color: "#4b4b4b",
-        padding: 20,
+        background: T.white,
+        padding: "20px 16px",
         borderRadius: 16,
         textAlign: "center",
-        border: "2px solid #e5e5e5",
-        borderBottom: "4px solid #e5e5e5",
+        border: `1.5px solid ${T.border}`,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 700, color: "#afafaf", textTransform: "uppercase" }}>{label}</div>
-      <div style={{ fontSize: 32, fontWeight: 800, margin: "8px 0", color: "#4b4b4b" }}>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          color: T.ink4,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: 30,
+          fontWeight: 800,
+          color: accentColor ?? T.ink,
+          fontFamily: "'Bricolage Grotesque', sans-serif",
+          letterSpacing: "-0.03em",
+          lineHeight: 1.1,
+        }}
+      >
         {value}
       </div>
-      {sub && <div style={{ fontSize: 13, fontWeight: 700, color: "#afafaf" }}>{sub}</div>}
+      {sub && (
+        <div style={{ fontSize: 12, color: T.ink4, fontWeight: 500 }}>{sub}</div>
+      )}
     </div>
   );
 }
+
+// ─────────────────────────────────────────────
+// SectionHeader
+// ─────────────────────────────────────────────
+export function SectionHeader({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <h2
+        style={{
+          fontFamily: "'Bricolage Grotesque', sans-serif",
+          fontSize: 22,
+          fontWeight: 800,
+          color: T.ink,
+          letterSpacing: "-0.03em",
+          marginBottom: subtitle ? 6 : 0,
+        }}
+      >
+        {title}
+      </h2>
+      {subtitle && (
+        <p style={{ fontSize: 14, color: T.ink3, lineHeight: 1.55 }}>{subtitle}</p>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// InfoCard  (replaces ad-hoc blue info panels)
+// ─────────────────────────────────────────────
+export function InfoCard({
+  children,
+  accent = "orange",
+}: {
+  children: React.ReactNode;
+  accent?: "orange" | "green" | "info";
+}) {
+  const colors = {
+    orange: { border: T.orange,   bg: T.orangeLight },
+    green:  { border: T.green,    bg: T.greenLight },
+    info:   { border: T.info,     bg: T.infoBg },
+  };
+  const { border, bg } = colors[accent];
+  return (
+    <div
+      style={{
+        background: bg,
+        borderLeft: `4px solid ${border}`,
+        borderRadius: "0 12px 12px 0",
+        padding: "16px 20px",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export { T };

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signUpUser, signInUser } from "@/lib/auth-context";
-import { Btn } from "./ui";
+import { Btn, T } from "./ui";
 
 type AuthMode = "login" | "signup";
 
@@ -25,7 +25,6 @@ export default function AuthSupabase({
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       let result;
       if (mode === "signup") {
@@ -33,9 +32,11 @@ export default function AuthSupabase({
       } else {
         result = await signInUser(email, password);
       }
-
       if (result.error) {
-        const errorMsg = result.error instanceof Error ? result.error.message : String(result.error);
+        const errorMsg =
+          result.error instanceof Error
+            ? result.error.message
+            : String(result.error);
         setError(errorMsg);
       } else if (result.user && result.profile) {
         onAuthSuccess(result.user.id, result.profile);
@@ -48,140 +49,333 @@ export default function AuthSupabase({
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Articulate</h1>
-        <p style={styles.subtitle}>{t("app.subtitle")}</p>
+    <div style={s.page}>
+      {/* Brand panel */}
+      <div style={s.brand}>
+        <div style={s.brandInner}>
+          <div style={s.logoMark}>
+            <span style={{ fontSize: 28 }}>🎙</span>
+          </div>
+          <h1 style={s.wordmark}>Articulate</h1>
+          <p style={s.tagline}>
+            Master public speaking through daily practice, real-time feedback,
+            and friendly competition.
+          </p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {mode === "signup" && (
-            <>
+          {/* Feature pills */}
+          <div style={s.featureList}>
+            {[
+              { icon: "🔥", text: "Daily streaks & XP" },
+              { icon: "🎯", text: "Personalised drills" },
+              { icon: "📈", text: "Track your progress" },
+              { icon: "🏆", text: "Compete with friends" },
+            ].map(({ icon, text }) => (
+              <div key={text} style={s.featureItem}>
+                <span style={s.featureIcon}>{icon}</span>
+                <span style={s.featureText}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Form panel */}
+      <div style={s.formPanel}>
+        <div style={s.formCard}>
+          <div style={s.formHeader}>
+            <h2 style={s.formTitle}>
+              {mode === "login" ? "Welcome back" : "Create your account"}
+            </h2>
+            <p style={s.formSubtitle}>
+              {mode === "login"
+                ? "Sign in to continue your journey"
+                : "Start speaking with confidence today"}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} style={s.form}>
+            {mode === "signup" && (
+              <>
+                <Field label="Full name">
+                  <input
+                    type="text"
+                    placeholder="Jane Smith"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    style={s.input}
+                    required
+                  />
+                </Field>
+                <Field label="Username">
+                  <input
+                    type="text"
+                    placeholder="janesmith"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    style={s.input}
+                    required
+                  />
+                </Field>
+              </>
+            )}
+
+            <Field label="Email address">
               <input
-                type="text"
-                placeholder={t("auth.fullname")}
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                style={styles.input}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={s.input}
                 required
               />
+            </Field>
+
+            <Field label="Password">
               <input
-                type="text"
-                placeholder={t("auth.username")}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={styles.input}
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={s.input}
                 required
               />
-            </>
-          )}
+            </Field>
 
-          <input
-            type="email"
-            placeholder={t("auth.email")}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-            required
-          />
+            {error && (
+              <div style={s.errorBox}>
+                <span style={{ fontSize: 15 }}>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
 
-          <input
-            type="password"
-            placeholder={t("auth.password")}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-            required
-          />
+            <Btn fullWidth disabled={loading} style={{ marginTop: 4 }}>
+              {loading
+                ? "Please wait…"
+                : mode === "login"
+                ? "Sign in"
+                : "Create account"}
+            </Btn>
+          </form>
 
-          {error && <div style={styles.error}>{error}</div>}
+          <div style={s.divider}>
+            <span style={s.dividerLine} />
+            <span style={s.dividerText}>or</span>
+            <span style={s.dividerLine} />
+          </div>
 
-          <Btn style={{ width: "100%" }} disabled={loading}>
-            {loading ? t("auth.loading") : mode === "login" ? t("auth.signin") : t("auth.createaccount")}
-          </Btn>
-        </form>
-
-        <div style={styles.toggle}>
-          {mode === "login" ? t("auth.noaccount") : t("auth.haveaccount")}
-          <button
-            onClick={() => {
-              setMode(mode === "login" ? "signup" : "login");
-              setError("");
-            }}
-            style={styles.toggleBtn}
-          >
-            {mode === "login" ? t("auth.signup") : t("auth.signin")}
-          </button>
+          <p style={s.toggleRow}>
+            {mode === "login" ? "Don't have an account?" : "Already have one?"}
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "login" ? "signup" : "login");
+                setError("");
+              }}
+              style={s.toggleBtn}
+            >
+              {mode === "login" ? "Sign up" : "Sign in"}
+            </button>
+          </p>
         </div>
       </div>
     </div>
   );
 }
 
-const styles = {
-  container: {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label
+        style={{
+          fontSize: 13,
+          fontWeight: 700,
+          color: T.ink2,
+          letterSpacing: "0.02em",
+        }}
+      >
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const s: Record<string, React.CSSProperties> = {
+  page: {
+    display: "flex",
+    minHeight: "100vh",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+  },
+  /* ── Brand panel (left / top on mobile) ── */
+  brand: {
+    flex: "0 0 42%",
+    background: `linear-gradient(145deg, ${T.ink} 0%, #2E1A0E 100%)`,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    minHeight: "100vh",
-    background: "#fafaf8",
-    padding: "20px",
-  } as React.CSSProperties,
-  card: {
-    background: "#fff",
+    padding: "48px 40px",
+  },
+  brandInner: {
+    maxWidth: 340,
+  },
+  logoMark: {
+    width: 56,
+    height: 56,
     borderRadius: 16,
-    padding: 40,
-    border: "2px solid #e0e0e0",
-    maxWidth: 400,
-    width: "100%",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    background: T.orange,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+    boxShadow: "0 4px 16px rgba(232,115,42,0.40)",
+  },
+  wordmark: {
+    fontFamily: "'Bricolage Grotesque', sans-serif",
+    fontSize: 36,
+    fontWeight: 800,
+    color: "#FFFFFF",
+    letterSpacing: "-0.04em",
+    marginBottom: 12,
+  },
+  tagline: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.65)",
+    lineHeight: 1.65,
+    marginBottom: 36,
+  },
+  featureList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+  },
+  featureItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  },
+  featureIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    background: "rgba(255,255,255,0.08)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 18,
+    flexShrink: 0,
   } as React.CSSProperties,
-  title: {
-    fontSize: 32,
-    fontWeight: 900,
-    color: "#2a2a2a",
-    fontFamily: "'Syne', sans-serif",
-    marginBottom: 4,
-    textAlign: "center" as const,
-  } as React.CSSProperties,
-  subtitle: {
+  featureText: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center" as const,
-    marginBottom: 32,
-  } as React.CSSProperties,
+    color: "rgba(255,255,255,0.80)",
+    fontWeight: 500,
+  },
+  /* ── Form panel (right) ── */
+  formPanel: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px 24px",
+    background: T.surface,
+  },
+  formCard: {
+    background: T.white,
+    borderRadius: 20,
+    padding: "40px 36px",
+    width: "100%",
+    maxWidth: 420,
+    boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+    border: `1.5px solid ${T.border}`,
+  },
+  formHeader: {
+    marginBottom: 28,
+  },
+  formTitle: {
+    fontFamily: "'Bricolage Grotesque', sans-serif",
+    fontSize: 24,
+    fontWeight: 800,
+    color: T.ink,
+    letterSpacing: "-0.03em",
+    marginBottom: 6,
+  },
+  formSubtitle: {
+    fontSize: 14,
+    color: T.ink3,
+    lineHeight: 1.5,
+  },
   form: {
     display: "flex",
-    flexDirection: "column" as const,
+    flexDirection: "column",
     gap: 16,
-    marginBottom: 24,
-  } as React.CSSProperties,
+  },
   input: {
-    padding: 14,
-    border: "2px solid #e0e0e0",
-    borderRadius: 8,
+    padding: "13px 16px",
+    border: `1.5px solid ${T.border}`,
+    borderRadius: 12,
     fontSize: 14,
-    fontFamily: "'Poppins', sans-serif",
-    transition: "all 0.2s",
-  } as React.CSSProperties,
-  error: {
-    background: "#ffe0e0",
-    color: "#d32f2f",
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 13,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontWeight: 500,
-  } as React.CSSProperties,
-  toggle: {
-    textAlign: "center" as const,
+    color: T.ink,
+    background: T.white,
+    outline: "none",
+    transition: "border-color 0.18s, box-shadow 0.18s",
+    width: "100%",
+  },
+  errorBox: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    background: "#FEE8E6",
+    color: T.error,
+    padding: "12px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    fontWeight: 600,
+    border: `1px solid rgba(217,48,37,0.15)`,
+  },
+  divider: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    margin: "24px 0",
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    background: T.border,
+  },
+  dividerText: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: T.ink4,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+  },
+  toggleRow: {
+    textAlign: "center",
     fontSize: 14,
-    color: "#666",
-  } as React.CSSProperties,
+    color: T.ink3,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
   toggleBtn: {
     background: "none",
     border: "none",
-    color: "#d97e3a",
+    color: T.orange,
     fontWeight: 700,
     cursor: "pointer",
+    fontSize: 14,
+    padding: 0,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     textDecoration: "underline",
-  } as React.CSSProperties,
+    textUnderlineOffset: 2,
+  },
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { Session, UserData } from "@/lib/types";
-import { StatCard, FeedbackRow } from "./ui";
+import { StatCard, FeedbackRow, InfoCard, T } from "./ui";
 import Leaderboard from "./Leaderboard";
 
 export default function Dashboard({
@@ -11,8 +11,7 @@ export default function Dashboard({
   sessions: Session[];
   user: UserData;
 }) {
-  const streak = user.streak;
-  const xpProgress = (user.todayXp / user.dailyGoalXp) * 100;
+  const xpProgress = Math.min((user.todayXp / user.dailyGoalXp) * 100, 100);
   const last30 = sessions.slice(-30);
   const avgConfidence = last30.length
     ? Math.round(
@@ -20,99 +19,89 @@ export default function Dashboard({
           last30.length
       )
     : 0;
-  const fillerRate = last30.length
-    ? (
-        last30.reduce(
-          (a, s) => a + parseFloat(s.analysis?.fillerRate ?? "0"),
-          0
-        ) / last30.length
-      ).toFixed(2)
-    : "0.00";
   const thisWeek = sessions.filter(
     (s) => new Date(s.date) > new Date(Date.now() - 7 * 864e5)
   ).length;
 
   return (
-    <div>
-      <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 20 }}>
-        Your Dashboard
-      </h1>
+    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 
-      {/* Gamification Progress */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-          <h3 style={{ fontWeight: 700, color: "#4b4b4b" }}>Daily Goal Progress</h3>
-          <span style={{ fontWeight: 700, color: "#58cc02" }}>{user.todayXp} / {user.dailyGoalXp} XP</span>
+      {/* ── Hero: greeting + daily goal ── */}
+      <div style={s.hero}>
+        <div>
+          <p style={s.heroEyebrow}>Good to see you back</p>
+          <h1 style={s.heroName}>{user.name || "Speaker"} 👋</h1>
         </div>
-        <div style={{ 
-          width: "100%", 
-          height: 24, 
-          background: "#e5e5e5", 
-          borderRadius: 12, 
-          overflow: "hidden",
-          borderBottom: "4px solid #d0d0d0"
-        }}>
-          <div style={{ 
-            width: `${Math.min(xpProgress, 100)}%`, 
-            height: "100%", 
-            background: "#58cc02",
-            transition: "width 0.5s ease-out"
-          }} />
+        <div style={s.levelBadge}>
+          <span style={s.levelLabel}>Level</span>
+          <span style={s.levelNum}>{user.level}</span>
         </div>
       </div>
 
-      {/* Stats */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
-          gap: 14,
-          marginBottom: 24,
-        }}
-      >
-        <StatCard label="Current Streak" value={streak} sub="days 🔥" />
-        <StatCard label="Speech Fitness" value={avgConfidence} sub="30-day avg" />
-        <StatCard label="Level" value={user.level} sub="Speaking Master" />
-        <StatCard label="Total XP" value={user.xp} sub="All time 💎" />
+      {/* ── Daily XP progress ── */}
+      <div style={s.xpCard}>
+        <div style={s.xpTop}>
+          <div>
+            <p style={s.xpLabel}>Daily goal</p>
+            <p style={s.xpSub}>Keep your streak alive 🔥</p>
+          </div>
+          <div style={s.xpCount}>
+            <span style={{ color: T.green, fontWeight: 800 }}>{user.todayXp}</span>
+            <span style={{ color: T.ink4, fontWeight: 600 }}>/{user.dailyGoalXp} XP</span>
+          </div>
+        </div>
+        <div style={s.track}>
+          <div style={{ ...s.fill, width: `${xpProgress}%` }} />
+        </div>
+        {xpProgress >= 100 && (
+          <p style={{ fontSize: 13, color: T.green, fontWeight: 700, marginTop: 8 }}>
+            ✓ Daily goal complete!
+          </p>
+        )}
       </div>
 
+      {/* ── Stat grid ── */}
+      <div style={s.statGrid}>
+        <StatCard label="Streak"         value={`${user.streak}d`}    sub="Keep it going 🔥" accent="orange" />
+        <StatCard label="Speech Fitness" value={avgConfidence || "—"} sub="30-day avg"        accent="green" />
+        <StatCard label="This Week"      value={thisWeek}             sub="sessions"          accent="orange" />
+        <StatCard label="Total XP"       value={user.xp}              sub="all time 💎"       accent="green" />
+      </div>
+
+      {/* ── Leaderboard ── */}
       <Leaderboard user={user} />
 
-      {/* Compete Card */}
-      <div style={styles.competeCard}>
+      {/* ── Compete card ── */}
+      <div style={s.competeCard}>
+        <div style={s.competeIcon}>🏆</div>
         <div>
-          <h3 style={styles.competeTitle}>🏆 Compete with Friends</h3>
-          <p style={styles.competeText}>Join the Weekly League and climb the ranks. Check the Social tab to see who's leading!</p>
+          <h3 style={s.competeTitle}>Compete with Friends</h3>
+          <p style={s.competeText}>
+            Join the Weekly League and climb the ranks. Check the Social tab to
+            see who's leading!
+          </p>
         </div>
       </div>
 
-      {/* Insights */}
+      {/* ── Insights ── */}
       {sessions.length > 0 ? (
-        <div
-          style={{
-            background: "#f0f9ff",
-            borderLeft: "4px solid #3b82f6",
-            padding: 20,
-            borderRadius: 8,
-          }}
-        >
-          <h4 style={{ color: "#3b82f6", marginBottom: 10 }}>
-            Recent Insights
+        <InfoCard accent="green">
+          <h4 style={{ color: T.greenDark, fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
+            📊 Recent Insights
           </h4>
-          <FeedbackRow label="Your pace is improving" value="+12%" color="success" />
-          <FeedbackRow label="Filler words decreasing" value="-18%" color="success" />
-          <FeedbackRow
-            label="Confidence trend"
-            value="Upward"
-            color="info"
-          />
-        </div>
+          <FeedbackRow label="Your pace is improving"    value="+12%"   color="success" />
+          <FeedbackRow label="Filler words decreasing"   value="−18%"   color="success" />
+          <FeedbackRow label="Confidence trend"          value="Upward"  color="success" />
+        </InfoCard>
       ) : (
-        <div style={{ textAlign: "center", padding: 40, color: "#666" }}>
-          <h3 style={{ marginBottom: 8 }}>Ready to start your journey?</h3>
-          <p>
+        <div style={s.emptyState}>
+          <div style={s.emptyIcon}>🎙</div>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: T.ink, marginBottom: 8 }}>
+            Ready to start?
+          </h3>
+          <p style={{ fontSize: 14, color: T.ink3, lineHeight: 1.6, maxWidth: 280, margin: "0 auto" }}>
             Complete your first Rhythm Lab drill or Daily Game to see your
-            progress here!
+            progress here.
           </p>
         </div>
       )}
@@ -120,23 +109,140 @@ export default function Dashboard({
   );
 }
 
-const styles = {
-  competeCard: {
-    background: "linear-gradient(135deg, #fff9f0, #fff)",
-    border: "3px solid #d97e3a",
-    borderRadius: 12,
-    padding: 24,
-    marginTop: 32,
-  } as React.CSSProperties,
-  competeTitle: {
-    fontSize: 20,
+const s: Record<string, React.CSSProperties> = {
+  hero: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 16,
+  },
+  heroEyebrow: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: T.ink4,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    marginBottom: 4,
+  },
+  heroName: {
+    fontFamily: "'Bricolage Grotesque', sans-serif",
+    fontSize: 28,
     fontWeight: 800,
-    color: "#2a2a2a",
-    marginBottom: 8,
-  } as React.CSSProperties,
+    color: T.ink,
+    letterSpacing: "-0.03em",
+    margin: 0,
+  },
+  levelBadge: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    background: T.orangeLight,
+    borderRadius: 14,
+    padding: "10px 18px",
+    flexShrink: 0,
+  },
+  levelLabel: {
+    fontSize: 10,
+    fontWeight: 700,
+    color: T.orangeDark,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+  },
+  levelNum: {
+    fontSize: 26,
+    fontWeight: 800,
+    color: T.orange,
+    fontFamily: "'Bricolage Grotesque', sans-serif",
+    lineHeight: 1.1,
+  },
+  xpCard: {
+    background: T.white,
+    borderRadius: 16,
+    padding: "20px 24px",
+    border: `1.5px solid ${T.border}`,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  },
+  xpTop: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 14,
+  },
+  xpLabel: {
+    fontSize: 15,
+    fontWeight: 700,
+    color: T.ink,
+    marginBottom: 2,
+  },
+  xpSub: {
+    fontSize: 13,
+    color: T.ink4,
+  },
+  xpCount: {
+    fontSize: 16,
+    display: "flex",
+    gap: 2,
+    alignItems: "baseline",
+  },
+  track: {
+    width: "100%",
+    height: 10,
+    background: T.border,
+    borderRadius: 9999,
+    overflow: "hidden",
+  },
+  fill: {
+    height: "100%",
+    background: `linear-gradient(90deg, ${T.orange}, ${T.green})`,
+    borderRadius: 9999,
+    transition: "width 0.5s cubic-bezier(0.4,0,0.2,1)",
+  },
+  statGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+    gap: 12,
+  },
+  competeCard: {
+    background: T.white,
+    border: `1.5px solid ${T.border}`,
+    borderRadius: 16,
+    padding: "20px 24px",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 16,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  },
+  competeIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    background: T.orangeLight,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 22,
+    flexShrink: 0,
+  },
+  competeTitle: {
+    fontSize: 16,
+    fontWeight: 800,
+    color: T.ink,
+    marginBottom: 4,
+  },
   competeText: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 13,
+    color: T.ink3,
     lineHeight: 1.6,
-  } as React.CSSProperties,
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "48px 24px",
+    background: T.surface,
+    borderRadius: 16,
+    border: `1.5px dashed ${T.border}`,
+  },
+  emptyIcon: {
+    fontSize: 44,
+    marginBottom: 16,
+  },
 };

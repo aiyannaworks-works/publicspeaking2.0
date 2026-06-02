@@ -1,14 +1,28 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Articulate - Master Public Speaking",
-  description: "Gamified public speaking trainer. Earn XP, compete with friends, and master the art of articulate communication.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-  themeColor: "#d97e3a",
+  title: "Articulate — Master Public Speaking",
+  description:
+    "Gamified public speaking trainer. Earn XP, compete with friends, and master the art of confident communication through daily practice.",
+  keywords: ["public speaking", "communication", "confidence", "speech training", "presentation skills"],
+  authors: [{ name: "Articulate" }],
+  applicationName: "Articulate",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Articulate",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#E8732A",
 };
 
 export default function RootLayout({
@@ -19,9 +33,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="theme-color" content="#1cb0f6" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
