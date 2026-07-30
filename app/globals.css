@@ -394,6 +394,8 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
   .practice-choice-card {
+    min-width: 0;
+    max-width: 100%;
     min-height: 210px;
     padding: 26px 24px !important;
     border-radius: 20px !important;
@@ -412,8 +414,18 @@ input[type="range"]::-webkit-slider-thumb {
 
   .practice-card-footer {
     align-items: flex-end;
+    flex-wrap: wrap;
     margin-top: auto !important;
     padding-top: 22px;
+  }
+
+  .practice-card-footer span:first-child {
+    white-space: normal;
+  }
+
+  .practice-card-footer span:last-child {
+    margin-left: auto;
+    white-space: nowrap;
   }
 
   .mobile-bottom-nav {
