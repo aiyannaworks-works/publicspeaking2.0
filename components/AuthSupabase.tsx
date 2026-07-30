@@ -20,10 +20,12 @@ export default function AuthSupabase({
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
     try {
       let result;
@@ -33,16 +35,19 @@ export default function AuthSupabase({
         result = await signInUser(email, password);
       }
       if (result.error) {
-        const errorMsg =
-          result.error instanceof Error
-            ? result.error.message
-            : String(result.error);
-        setError(errorMsg);
+        setError(getErrorMessage(result.error));
+      } else if (
+        "requiresEmailConfirmation" in result &&
+        result.requiresEmailConfirmation
+      ) {
+        setSuccess(
+          "Account created! Check your email and confirm your address, then return here to sign in."
+        );
       } else if (result.user && result.profile) {
         onAuthSuccess(result.user.id, result.profile);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -148,6 +153,13 @@ export default function AuthSupabase({
               </div>
             )}
 
+            {success && (
+              <div style={s.successBox} role="status">
+                <span style={{ fontSize: 15 }}>✓</span>
+                <span>{success}</span>
+              </div>
+            )}
+
             <Btn fullWidth disabled={loading} style={{ marginTop: 4 }}>
               {loading
                 ? "Please wait…"
@@ -170,6 +182,7 @@ export default function AuthSupabase({
               onClick={() => {
                 setMode(mode === "login" ? "signup" : "login");
                 setError("");
+                setSuccess("");
               }}
               style={s.toggleBtn}
             >
@@ -180,6 +193,19 @@ export default function AuthSupabase({
       </div>
     </div>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+  return "Something went wrong. Please try again.";
 }
 
 function Field({
@@ -338,6 +364,19 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: 13,
     fontWeight: 600,
     border: `1px solid rgba(217,48,37,0.15)`,
+  },
+  successBox: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 10,
+    background: T.greenLight,
+    color: T.greenDark,
+    padding: "12px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    fontWeight: 600,
+    lineHeight: 1.5,
+    border: `1px solid rgba(90,158,58,0.18)`,
   },
   divider: {
     display: "flex",

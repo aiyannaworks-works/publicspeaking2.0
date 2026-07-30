@@ -26,41 +26,48 @@ export async function signUpUser(
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          username,
+          full_name: fullName,
+          language,
+        },
+      },
     });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error("User creation failed");
 
-    // Create profile in database
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .insert({
-        id: authData.user.id,
-        username,
-        full_name: fullName,
-        xp: 0,
-        level: 1,
-        streak: 0,
-        language,
-        last_active_date: new Date().toDateString(),
-      })
-      .select()
-      .single();
+    // When email confirmation is enabled, there is no authenticated session yet.
+    // A protected database trigger creates the profile and weekly XP row.
+    if (!authData.session) {
+      return {
+        user: authData.user,
+        profile: null,
+        error: null,
+        requiresEmailConfirmation: true,
+      };
+    }
 
+    const { profile, error: profileError } = await getCurrentUserProfile(
+      authData.user.id
+    );
     if (profileError) throw profileError;
 
-    // Initialize weekly XP for current week
-    const weekStart = getWeekStart(new Date());
-    await supabase.from("weekly_xp").insert({
-      user_id: authData.user.id,
-      week_start_date: weekStart,
-      xp: 0,
-    });
-
-    return { user: authData.user, profile: profileData, error: null };
+    return {
+      user: authData.user,
+      profile,
+      error: null,
+      requiresEmailConfirmation: false,
+    };
   } catch (error) {
     console.error("Signup error:", error);
-    return { user: null, profile: null, error };
+    return {
+      user: null,
+      profile: null,
+      error,
+      requiresEmailConfirmation: false,
+    };
   }
 }
 
