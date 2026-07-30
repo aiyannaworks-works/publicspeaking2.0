@@ -59,7 +59,7 @@ export default function Onboarding({
         {/* Brand mark */}
         <div style={s.logoWrap}>
           <div style={s.logoIcon}>🎙</div>
-          <span style={s.wordmark}>Articulate</span>
+          <span className="articulate-wordmark" style={s.wordmark}>Articulate</span>
         </div>
 
         <h1 style={s.headline}>Speak with confidence,<br />every single day.</h1>

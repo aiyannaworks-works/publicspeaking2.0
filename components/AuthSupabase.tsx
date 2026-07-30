@@ -61,7 +61,7 @@ export default function AuthSupabase({
           <div style={s.logoMark}>
             <span style={{ fontSize: 28 }}>🎙</span>
           </div>
-          <h1 style={s.wordmark}>Articulate</h1>
+          <h1 className="articulate-wordmark" style={s.wordmark}>Articulate</h1>
           <p style={s.tagline}>
             Master public speaking through daily practice, real-time feedback,
             and friendly competition.

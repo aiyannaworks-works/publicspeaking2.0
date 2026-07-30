@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ── Reset ── */
 *, *::before, *::after {
@@ -114,6 +114,14 @@ a {
 }
 
 a:hover { text-decoration: underline; }
+
+.articulate-wordmark {
+  font-family: 'Fraunces', Georgia, serif !important;
+  font-optical-sizing: auto;
+  font-weight: 800 !important;
+  letter-spacing: -0.045em !important;
+  line-height: 0.95;
+}
 
 /* ── Buttons ── */
 button {

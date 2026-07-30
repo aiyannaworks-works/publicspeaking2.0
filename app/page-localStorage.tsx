@@ -135,7 +135,7 @@ export default function App() {
       {/* Header */}
       <header style={{...styles.header, marginBottom: isMobile ? 20 : 40, paddingBottom: isMobile ? 12 : 20}}>
         <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-          <span style={styles.logo}>Articulate</span>
+          <span className="articulate-wordmark" style={styles.logo}>Articulate</span>
           {user && (
             <div style={styles.statsBar}>
               <span title="Streak">🔥 {user.streak}</span>

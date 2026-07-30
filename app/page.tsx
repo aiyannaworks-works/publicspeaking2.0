@@ -160,7 +160,10 @@ export default function App() {
       {/* Header */}
       <header className="app-header" style={styles.header}>
         <div className="app-identity" style={{ display: "flex", alignItems: "center", gap: 15 }}>
-          <span style={styles.logo}><span style={{ fontSize: 18 }}>🎙</span> Articulate</span>
+          <span style={styles.logo}>
+            <span style={{ fontSize: 18 }}>🎙</span>
+            <span className="articulate-wordmark">Articulate</span>
+          </span>
           {user && (
             <div className="app-stats" style={styles.statsBar}>
               <span title="Streak">🔥 {user.streak}</span>
