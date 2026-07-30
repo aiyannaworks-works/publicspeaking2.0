@@ -117,19 +117,22 @@ export default function DailyGames({
   /* ── Game list ── */
   if (!game)
     return (
-      <div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>
+      <div className="practice-page">
+        <div className="practice-intro">
+        <h1 style={{ fontSize: 30, fontWeight: 800, marginBottom: 10 }}>
           Daily Games
         </h1>
-        <p style={{ color: "#666", marginBottom: 24 }}>
+        <p style={{ color: "#666" }}>
           Challenge yourself with fun games designed to improve your speaking
           skills.
         </p>
+        </div>
         <div
+          className="practice-grid games-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            gap: 20,
           }}
         >
           <GameCard
@@ -354,6 +357,7 @@ function GameCard({
   return (
     <button
       type="button"
+      className="practice-choice-card"
       onClick={onClick}
       aria-label={`Start ${title}`}
       style={{
@@ -361,7 +365,7 @@ function GameCard({
         background: "#fff",
         border: "2px solid #e8e4de",
         borderRadius: 16,
-        padding: 24,
+        padding: 26,
         cursor: "pointer",
         textAlign: "left",
         whiteSpace: "normal",
@@ -372,6 +376,7 @@ function GameCard({
         {description}
       </p>
       <div
+        className="practice-card-footer"
         style={{
           display: "flex",
           justifyContent: "space-between",

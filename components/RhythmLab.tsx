@@ -52,19 +52,22 @@ export default function RhythmLab({
   /* ── Drill list ── */
   if (!drill)
     return (
-      <div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 8 }}>
+      <div className="practice-page">
+        <div className="practice-intro">
+        <h1 style={{ fontSize: 30, fontWeight: 800, marginBottom: 10 }}>
           Rhythm Lab
         </h1>
-        <p style={{ color: "#666", marginBottom: 24 }}>
+        <p style={{ color: T.ink3 }}>
           Build your speaking foundation with targeted drills focused on pace,
           pauses, and timing.
         </p>
+        </div>
         <div
+          className="practice-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            gap: 20,
           }}
         >
           {DRILLS.map((d) => (
@@ -200,13 +203,14 @@ function DrillCard({
   return (
     <button
       type="button"
+      className="practice-choice-card"
       onClick={onClick}
       aria-label={`Start ${drill.name}`}
       style={{
         width: "100%",
         background: T.white,
         color: T.ink,
-        padding: 22,
+        padding: 26,
         border: `2px solid ${T.border}`,
         borderRadius: 16,
         cursor: "pointer",
@@ -224,6 +228,7 @@ function DrillCard({
         {drill.description}
       </div>
       <div
+        className="practice-card-footer"
         style={{
           display: "flex",
           justifyContent: "space-between",
