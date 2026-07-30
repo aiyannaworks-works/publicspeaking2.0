@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { Session } from "@/lib/types";
 import { DRILLS, analyzeSpeech } from "@/lib/utils";
-import { Btn, Badge, FeedbackRow, RecordButton, TimerDisplay } from "./ui";
+import { Btn, Badge, FeedbackRow, RecordButton, TimerDisplay, T } from "./ui";
 
 const orange = "#d97e3a";
 
@@ -174,6 +174,10 @@ export default function RhythmLab({
           borderRadius: 12,
         }}
       >
+        <p style={{ color: T.ink3, fontSize: 13, marginBottom: 18 }}>
+          Find a quiet space and speak for 45–90 seconds. Your result appears as
+          soon as you stop.
+        </p>
         <RecordButton recording={recording} onClick={toggle} />
         {recording && <TimerDisplay seconds={time} />}
         <p style={{ color: "#666", marginTop: 16 }}>
@@ -193,41 +197,46 @@ function DrillCard({
   drill: (typeof DRILLS)[0];
   onClick: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      aria-label={`Start ${drill.name}`}
       style={{
-        background: "linear-gradient(135deg,#d97e3a,#c96f2e)",
-        color: "#fff",
-        padding: 28,
-        borderRadius: 12,
+        width: "100%",
+        background: T.white,
+        color: T.ink,
+        padding: 22,
+        border: `2px solid ${T.border}`,
+        borderRadius: 16,
         cursor: "pointer",
-        position: "relative",
-        transform: hovered ? "translateY(-4px)" : "none",
-        boxShadow: hovered ? "0 8px 20px rgba(0,0,0,.2)" : "none",
-        transition: "transform .2s, box-shadow .2s",
+        textAlign: "left",
+        whiteSpace: "normal",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          top: 14,
-          right: 14,
-          background: "rgba(255,255,255,.25)",
-          padding: "3px 10px",
-          borderRadius: 20,
-          fontSize: 12,
-        }}
-      >
-        {drill.badge}
+      <div style={{ marginBottom: 14 }}>
+        <Badge>{drill.badge}</Badge>
       </div>
-      <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+      <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
         {drill.name}
       </div>
-      <div style={{ fontSize: 14, opacity: 0.9 }}>{drill.description}</div>
-    </div>
+      <div style={{ fontSize: 14, color: T.ink3, lineHeight: 1.55 }}>
+        {drill.description}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          marginTop: 18,
+          color: T.orangeDark,
+          fontSize: 13,
+          fontWeight: 800,
+        }}
+      >
+        <span>2–3 min • +50 XP</span>
+        <span>Start →</span>
+      </div>
+    </button>
   );
 }

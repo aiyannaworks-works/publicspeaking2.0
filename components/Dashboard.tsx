@@ -1,15 +1,17 @@
 "use client";
 
 import { Session, UserData } from "@/lib/types";
-import { StatCard, FeedbackRow, InfoCard, T } from "./ui";
+import { Btn, StatCard, FeedbackRow, InfoCard, T } from "./ui";
 import Leaderboard from "./Leaderboard";
 
 export default function Dashboard({
   sessions,
   user,
+  onStartPractice,
 }: {
   sessions: Session[];
   user: UserData;
+  onStartPractice?: () => void;
 }) {
   const xpProgress = Math.min((user.todayXp / user.dailyGoalXp) * 100, 100);
   const last30 = sessions.slice(-30);
@@ -103,6 +105,9 @@ export default function Dashboard({
             Complete your first Rhythm Lab drill or Daily Game to see your
             progress here.
           </p>
+          <Btn onClick={onStartPractice ?? (() => {})} style={{ marginTop: 20 }}>
+            Start your first practice →
+          </Btn>
         </div>
       )}
     </div>

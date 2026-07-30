@@ -27,6 +27,7 @@ export default function App() {
   const [showReward, setShowReward] = useState(false);
   const [lastXpGain, setLastXpGain] = useState(0);
   const [language, setLanguage] = useState<Language>("en");
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   const t = (key: string) => getTranslation(language, key);
 
@@ -129,14 +130,15 @@ export default function App() {
     }
   };
 
-  const NAV: { id: Tab; label: string }[] = [
-    { id: "home", label: t("nav.dashboard") },
-    { id: "rhythm", label: t("nav.rhythmlab") },
-    { id: "games", label: t("nav.dailygames") },
-    { id: "progress", label: t("nav.progress") },
-    { id: "social", label: t("nav.social") },
-    { id: "achievements", label: t("nav.achievements") },
+  const NAV: { id: Tab; label: string; shortLabel: string; icon: string }[] = [
+    { id: "home", label: t("nav.dashboard"), shortLabel: "Home", icon: "⌂" },
+    { id: "rhythm", label: t("nav.rhythmlab"), shortLabel: "Practice", icon: "🎙" },
+    { id: "games", label: t("nav.dailygames"), shortLabel: "Games", icon: "⚡" },
+    { id: "progress", label: t("nav.progress"), shortLabel: "Progress", icon: "↗" },
+    { id: "social", label: t("nav.social"), shortLabel: "Social", icon: "♟" },
+    { id: "achievements", label: t("nav.achievements"), shortLabel: "Awards", icon: "★" },
   ];
+  const PRIMARY_MOBILE_NAV = NAV.slice(0, 4);
 
   if (isLoading) {
     return (
@@ -200,19 +202,83 @@ export default function App() {
       <main className="app-card" style={{ ...styles.card, animation: "fadeIn 0.3s ease-out" }}>
         {showReward && <RewardAnimation xpGained={lastXpGain} />}
         {tab === "home" ? (
-          <Dashboard sessions={sessions} user={user} />
+          <Dashboard sessions={sessions} user={user} onStartPractice={() => setTab("rhythm")} />
         ) : tab === "rhythm" ? (
           <RhythmLab addSession={addSession} />
         ) : tab === "games" ? (
           <DailyGames addSession={addSession} />
         ) : tab === "progress" ? (
-          <Progress sessions={sessions} />
+          <Progress sessions={sessions} onStartPractice={() => setTab("rhythm")} />
         ) : tab === "social" ? (
           <Social user={user} />
         ) : (
-          <Achievements user={user} />
+          <Achievements user={user} sessionsCount={sessions.length} />
         )}
       </main>
+
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+        {PRIMARY_MOBILE_NAV.map(({ id, shortLabel, icon }) => (
+          <button
+            key={id}
+            className={tab === id ? "mobile-nav-item active" : "mobile-nav-item"}
+            onClick={() => {
+              setTab(id);
+              setMobileMoreOpen(false);
+            }}
+            aria-current={tab === id ? "page" : undefined}
+          >
+            <span aria-hidden="true">{icon}</span>
+            <span>{shortLabel}</span>
+          </button>
+        ))}
+        <button
+          className={tab === "social" || tab === "achievements" ? "mobile-nav-item active" : "mobile-nav-item"}
+          onClick={() => setMobileMoreOpen((open) => !open)}
+          aria-expanded={mobileMoreOpen}
+        >
+          <span aria-hidden="true">•••</span>
+          <span>More</span>
+        </button>
+      </nav>
+
+      {mobileMoreOpen && (
+        <div className="mobile-more-panel">
+          <div className="mobile-more-card">
+            <p className="mobile-more-title">More</p>
+            {NAV.slice(4).map(({ id, label, icon }) => (
+              <button
+                key={id}
+                className="mobile-more-action"
+                onClick={() => {
+                  setTab(id);
+                  setMobileMoreOpen(false);
+                }}
+              >
+                <span aria-hidden="true">{icon}</span>
+                <span>{label}</span>
+              </button>
+            ))}
+            <label className="mobile-language">
+              <span>Language</span>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+              >
+                <option value="en">🇺🇸 English</option>
+                <option value="es">🇪🇸 Español</option>
+                <option value="fr">🇫🇷 Français</option>
+                <option value="de">🇩🇪 Deutsch</option>
+              </select>
+            </label>
+            <button className="mobile-sign-out" onClick={handleSignOut}>Sign Out</button>
+          </div>
+          <button
+            className="mobile-more-backdrop"
+            aria-label="Close menu"
+            onClick={() => setMobileMoreOpen(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }

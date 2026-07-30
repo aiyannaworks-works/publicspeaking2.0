@@ -351,26 +351,39 @@ function GameCard({
   description: string;
   onClick: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      aria-label={`Start ${title}`}
       style={{
+        width: "100%",
         background: "#fff",
-        border: `2px solid ${hovered ? orange : "#e0e0e0"}`,
-        borderRadius: 12,
+        border: "2px solid #e8e4de",
+        borderRadius: 16,
         padding: 24,
         cursor: "pointer",
-        transition: "border-color .2s",
+        textAlign: "left",
+        whiteSpace: "normal",
       }}
     >
       <h3 style={{ color: orange, marginBottom: 8, fontSize: 18 }}>{title}</h3>
       <p style={{ color: "#666", lineHeight: 1.6, marginBottom: 14 }}>
         {description}
       </p>
-      <div style={{ fontWeight: 700, color: orange }}>Click to Start →</div>
-    </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 12,
+          fontWeight: 700,
+          color: orange,
+          fontSize: 13,
+        }}
+      >
+        <span>About 1 min • +50 XP</span>
+        <span>Start →</span>
+      </div>
+    </button>
   );
 }

@@ -1,11 +1,17 @@
 "use client";
 
 import { Session } from "@/lib/types";
-import { Badge, StatCard } from "./ui";
+import { Badge, Btn, StatCard, T } from "./ui";
 
 const orange = "#d97e3a";
 
-export default function Progress({ sessions }: { sessions: Session[] }) {
+export default function Progress({
+  sessions,
+  onStartPractice,
+}: {
+  sessions: Session[];
+  onStartPractice?: () => void;
+}) {
   const last30 = sessions.slice(-30);
   const score = last30.length
     ? Math.round(
@@ -26,43 +32,66 @@ export default function Progress({ sessions }: { sessions: Session[] }) {
         Your Progress
       </h1>
 
-      {/* Fitness score ring */}
-      <div style={{ textAlign: "center", marginBottom: 36 }}>
-        <h2 style={{ color: orange, marginBottom: 16 }}>
-          Speech Fitness Score
-        </h2>
-        <div
-          style={{
-            width: 180,
-            height: 180,
-            borderRadius: "50%",
-            margin: "0 auto 16px",
-            background: `conic-gradient(${orange} ${pct}deg, #e0e0e0 ${pct}deg)`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+      {/* Fitness score */}
+      {sessions.length > 0 ? (
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <h2 style={{ color: orange, marginBottom: 16 }}>
+            Speech Fitness Score
+          </h2>
           <div
             style={{
-              width: 144,
-              height: 144,
+              width: 180,
+              height: 180,
               borderRadius: "50%",
-              background: "#fff",
+              margin: "0 auto 16px",
+              background: `conic-gradient(${orange} ${pct}deg, #e0e0e0 ${pct}deg)`,
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <div style={{ fontSize: 44, fontWeight: 700, color: orange }}>
-              {score}
+            <div
+              style={{
+                width: 144,
+                height: 144,
+                borderRadius: "50%",
+                background: "#fff",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div style={{ fontSize: 44, fontWeight: 700, color: orange }}>
+                {score}
+              </div>
+              <div style={{ fontSize: 13, color: "#666" }}>out of 100</div>
             </div>
-            <div style={{ fontSize: 13, color: "#666" }}>out of 100</div>
           </div>
+          <p style={{ color: "#666" }}>Based on your last 30 days</p>
         </div>
-        <p style={{ color: "#666" }}>Based on your last 30 days</p>
-      </div>
+      ) : (
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: 36,
+            padding: "44px 24px",
+            borderRadius: 16,
+            background: T.orangeLight,
+            border: `1.5px dashed ${T.orange}`,
+          }}
+        >
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📈</div>
+          <h2 style={{ fontSize: 21, marginBottom: 8 }}>Build your fitness score</h2>
+          <p style={{ maxWidth: 380, margin: "0 auto", color: T.ink3 }}>
+            Complete a practice session to establish your baseline. Your score
+            will become more useful as you practise.
+          </p>
+          <Btn onClick={onStartPractice ?? (() => {})} style={{ marginTop: 20 }}>
+            Start a practice →
+          </Btn>
+        </div>
+      )}
 
       {/* Trend stats */}
       {sessions.length > 0 && (
@@ -86,8 +115,8 @@ export default function Progress({ sessions }: { sessions: Session[] }) {
       {/* Session history */}
       <h3 style={{ marginBottom: 14 }}>Recent Sessions</h3>
       {sessions.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 40, color: "#666" }}>
-          No sessions yet. Start practising to see your progress!
+        <div style={{ textAlign: "center", padding: 28, color: T.ink3, background: T.surface, borderRadius: 12 }}>
+          Your completed sessions will appear here.
         </div>
       ) : (
         sessions

@@ -3,13 +3,6 @@
 import { UserData } from "@/lib/types";
 
 export default function Social({ user }: { user: UserData }) {
-  const activities = [
-    { name: "Duo", action: "Completed Rhythm Lab", xp: 50, time: "2 mins ago", icon: "🎵" },
-    { name: "Lily", action: "Earned 'Speed Demon' badge", xp: 0, time: "15 mins ago", icon: "⚡" },
-    { name: "Zari", action: "Reached Level 22", xp: 0, time: "1 hour ago", icon: "⭐" },
-    { name: "You", action: "Completed Daily Games", xp: 50, time: "Just now", icon: "🎮" },
-  ];
-
   const weeklyLeague = [
     ...user.friends,
     { id: "you", name: user.name || "You", xp: user.xp, level: user.level, streak: user.streak }
@@ -49,20 +42,16 @@ export default function Social({ user }: { user: UserData }) {
         <p style={styles.subtitle}>What your friends are up to</p>
         
         <div style={styles.feedContainer}>
-          {activities.map((activity, i) => (
-            <div className="social-row" key={i} style={styles.feedItem}>
-              <div style={styles.feedIcon}>{activity.icon}</div>
-              <div style={styles.feedContent}>
-                <div style={styles.feedText}>
-                  <strong>{activity.name}</strong> {activity.action}
-                </div>
-                <div style={styles.feedTime}>{activity.time}</div>
-              </div>
-              {activity.xp > 0 && (
-                <div style={styles.feedXp}>+{activity.xp} XP</div>
-              )}
+          <div style={styles.emptyFeed}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>👋</div>
+            <div style={{ fontWeight: 800, marginBottom: 5 }}>
+              Your activity feed is ready
             </div>
-          ))}
+            <div style={{ color: "#777", fontSize: 14, lineHeight: 1.55 }}>
+              Real updates will appear here as you and your friends complete
+              practices.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -153,6 +142,13 @@ const styles = {
     flexDirection: "column" as const,
     gap: 12,
   },
+  emptyFeed: {
+    padding: 28,
+    background: "#fff9f0",
+    borderRadius: 16,
+    border: "1px solid #f0d7c2",
+    textAlign: "center" as const,
+  } as React.CSSProperties,
   feedItem: {
     display: "flex",
     alignItems: "center",

@@ -1,10 +1,17 @@
 "use client";
 
 import { UserData } from "@/lib/types";
+import { T } from "./ui";
 
-export default function Achievements({ user }: { user: UserData }) {
+export default function Achievements({
+  user,
+  sessionsCount,
+}: {
+  user: UserData;
+  sessionsCount?: number;
+}) {
   const achievements = [
-    { id: "first_session", name: "First Steps", description: "Complete your first session", icon: "🎯", earned: true },
+    { id: "first_session", name: "First Steps", description: "Complete your first session", icon: "🎯", earned: (sessionsCount ?? 0) > 0 },
     { id: "level_5", name: "Rising Star", description: "Reach Level 5", icon: "⭐", earned: user.level >= 5 },
     { id: "level_10", name: "Pro Speaker", description: "Reach Level 10", icon: "🎤", earned: user.level >= 10 },
     { id: "streak_7", name: "Week Warrior", description: "7-day streak", icon: "🔥", earned: user.streak >= 7 },
@@ -53,18 +60,18 @@ export default function Achievements({ user }: { user: UserData }) {
 const styles = {
   title: {
     fontSize: 28,
-    fontWeight: 900,
-    color: "#2a2a2a",
+    fontWeight: 800,
+    color: T.ink,
     marginBottom: 28,
-    fontFamily: "'Syne', sans-serif",
-    letterSpacing: "-0.5px",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
+    letterSpacing: "-0.03em",
   } as React.CSSProperties,
   progressSection: {
     marginBottom: 40,
     padding: 20,
-    background: "#fafaf8",
-    borderRadius: 8,
-    border: "2px solid #e0e0e0",
+    background: T.surface,
+    borderRadius: 16,
+    border: `1.5px solid ${T.border}`,
   } as React.CSSProperties,
   progressHeader: {
     display: "flex",
@@ -73,24 +80,24 @@ const styles = {
   } as React.CSSProperties,
   progressLabel: {
     fontWeight: 700,
-    color: "#2a2a2a",
+    color: T.ink,
     fontSize: 14,
   } as React.CSSProperties,
   progressCount: {
     fontWeight: 700,
-    color: "#d97e3a",
+    color: T.orange,
     fontSize: 14,
   } as React.CSSProperties,
   progressBar: {
     width: "100%",
     height: 8,
-    background: "#e0e0e0",
+    background: T.border,
     borderRadius: 4,
     overflow: "hidden",
   } as React.CSSProperties,
   progressFill: {
     height: "100%",
-    background: "linear-gradient(90deg, #d97e3a, #6ba045)",
+    background: `linear-gradient(90deg, ${T.orange}, ${T.green})`,
     transition: "width 0.5s ease-out",
     borderRadius: 4,
   } as React.CSSProperties,
@@ -106,21 +113,20 @@ const styles = {
     justifyContent: "center",
     padding: 20,
     borderRadius: 12,
-    border: "2px solid #e0e0e0",
+    border: `1.5px solid ${T.border}`,
     textAlign: "center" as const,
     transition: "all 0.3s",
     position: "relative" as const,
   },
   badgeEarned: {
-    background: "#fff9f0",
-    borderColor: "#d97e3a",
-    borderWidth: 3,
-    boxShadow: "0 4px 12px rgba(217, 126, 58, 0.15)",
+    background: T.orangeLight,
+    borderColor: T.orange,
+    boxShadow: "0 4px 12px rgba(232,115,42,0.12)",
   } as React.CSSProperties,
   badgeLocked: {
-    background: "#f5f5f5",
-    borderColor: "#ddd",
-    opacity: 0.5,
+    background: T.surface,
+    borderColor: T.border,
+    opacity: 0.62,
   } as React.CSSProperties,
   badgeIcon: {
     fontSize: 40,
@@ -128,20 +134,20 @@ const styles = {
   } as React.CSSProperties,
   badgeName: {
     fontWeight: 800,
-    color: "#2a2a2a",
+    color: T.ink,
     fontSize: 14,
     marginBottom: 4,
   } as React.CSSProperties,
   badgeDesc: {
     fontSize: 12,
-    color: "#999",
+    color: T.ink3,
     lineHeight: 1.3,
   } as React.CSSProperties,
   checkmark: {
     position: "absolute" as const,
     top: 8,
     right: 8,
-    background: "#6ba045",
+    background: T.green,
     color: "#fff",
     width: 24,
     height: 24,
