@@ -1,0 +1,7 @@
+cd "/Users/aiyannastiverne/Documents/Codex/2026-07-30/ok-let-s-work-on-this/publicspeaking2.0"
+
+git add app/globals.css app/page.tsx components/AuthSupabase.tsx components/Dashboard.tsx components/Social.tsx
+
+git commit -m "Fix responsive UI layouts"
+
+git push origin main
