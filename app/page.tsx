@@ -149,20 +149,18 @@ export default function App() {
     );
   }
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
   if (!user) {
     return <AuthSupabase onAuthSuccess={handleAuthSuccess} t={t} />;
   }
 
   return (
-    <div style={{ ...styles.wrap, ...(isMobile ? styles.wrapMobile : {}) }}>
+    <div className="app-shell" style={styles.wrap}>
       {/* Header */}
-      <header style={{ ...styles.header, marginBottom: isMobile ? 20 : 40, paddingBottom: isMobile ? 12 : 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+      <header className="app-header" style={styles.header}>
+        <div className="app-identity" style={{ display: "flex", alignItems: "center", gap: 15 }}>
           <span style={styles.logo}><span style={{ fontSize: 18 }}>🎙</span> Articulate</span>
           {user && (
-            <div style={styles.statsBar}>
+            <div className="app-stats" style={styles.statsBar}>
               <span title="Streak">🔥 {user.streak}</span>
               <span title="Level">⭐ Lvl {user.level}</span>
               <span title="XP">💎 {user.xp} XP</span>
@@ -170,8 +168,8 @@ export default function App() {
           )}
         </div>
         {user && (
-          <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-            <nav style={styles.nav}>
+          <div className="app-controls" style={{ display: "flex", alignItems: "center", gap: 15 }}>
+            <nav className="app-nav" style={styles.nav} aria-label="Primary navigation">
               {NAV.map(({ id, label }) => (
                 <button key={id} style={styles.tab(tab === id)} onClick={() => setTab(id)}>
                   {label}
@@ -199,7 +197,7 @@ export default function App() {
       </header>
 
       {/* Main content */}
-      <main style={{ ...styles.card, ...(isMobile ? styles.cardMobile : {}), animation: "fadeIn 0.3s ease-out" }}>
+      <main className="app-card" style={{ ...styles.card, animation: "fadeIn 0.3s ease-out" }}>
         {showReward && <RewardAnimation xpGained={lastXpGain} />}
         {tab === "home" ? (
           <Dashboard sessions={sessions} user={user} />
@@ -226,9 +224,6 @@ const styles = {
     padding: "32px 24px",
     maxWidth: 1100,
     margin: "0 auto",
-  } as React.CSSProperties,
-  wrapMobile: {
-    padding: "16px 12px",
   } as React.CSSProperties,
   header: {
     display: "flex",
@@ -309,9 +304,5 @@ const styles = {
     padding: 36,
     border: "1.5px solid #E8E8E8",
     boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-  } as React.CSSProperties,
-  cardMobile: {
-    padding: 20,
-    borderRadius: 16,
   } as React.CSSProperties,
 };

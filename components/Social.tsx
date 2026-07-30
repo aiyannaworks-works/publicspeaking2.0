@@ -24,7 +24,7 @@ export default function Social({ user }: { user: UserData }) {
         
         <div style={styles.leagueContainer}>
           {weeklyLeague.map((person, i) => (
-            <div key={i} style={{...styles.leagueRow, ...( (person as any).id === "you" ? styles.userHighlight : {})}}>
+            <div className="social-row" key={i} style={{...styles.leagueRow, ...( (person as any).id === "you" ? styles.userHighlight : {})}}>
               <div style={styles.rank}>
                 {i === 0 && "🥇"}
                 {i === 1 && "🥈"}
@@ -50,7 +50,7 @@ export default function Social({ user }: { user: UserData }) {
         
         <div style={styles.feedContainer}>
           {activities.map((activity, i) => (
-            <div key={i} style={styles.feedItem}>
+            <div className="social-row" key={i} style={styles.feedItem}>
               <div style={styles.feedIcon}>{activity.icon}</div>
               <div style={styles.feedContent}>
                 <div style={styles.feedText}>

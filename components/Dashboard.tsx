@@ -27,7 +27,7 @@ export default function Dashboard({
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 
       {/* ── Hero: greeting + daily goal ── */}
-      <div style={s.hero}>
+      <div className="dashboard-hero" style={s.hero}>
         <div>
           <p style={s.heroEyebrow}>Good to see you back</p>
           <h1 style={s.heroName}>{user.name || "Speaker"} 👋</h1>
@@ -40,7 +40,7 @@ export default function Dashboard({
 
       {/* ── Daily XP progress ── */}
       <div style={s.xpCard}>
-        <div style={s.xpTop}>
+        <div className="dashboard-xp-top" style={s.xpTop}>
           <div>
             <p style={s.xpLabel}>Daily goal</p>
             <p style={s.xpSub}>Keep your streak alive 🔥</p>
@@ -72,7 +72,7 @@ export default function Dashboard({
       <Leaderboard user={user} />
 
       {/* ── Compete card ── */}
-      <div style={s.competeCard}>
+      <div className="dashboard-compete" style={s.competeCard}>
         <div style={s.competeIcon}>🏆</div>
         <div>
           <h3 style={s.competeTitle}>Compete with Friends</h3>

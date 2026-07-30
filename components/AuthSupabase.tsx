@@ -49,10 +49,10 @@ export default function AuthSupabase({
   };
 
   return (
-    <div style={s.page}>
+    <div className="auth-page" style={s.page}>
       {/* Brand panel */}
-      <div style={s.brand}>
-        <div style={s.brandInner}>
+      <div className="auth-brand" style={s.brand}>
+        <div className="auth-brand-inner" style={s.brandInner}>
           <div style={s.logoMark}>
             <span style={{ fontSize: 28 }}>🎙</span>
           </div>
@@ -63,7 +63,7 @@ export default function AuthSupabase({
           </p>
 
           {/* Feature pills */}
-          <div style={s.featureList}>
+          <div className="auth-features" style={s.featureList}>
             {[
               { icon: "🔥", text: "Daily streaks & XP" },
               { icon: "🎯", text: "Personalised drills" },
@@ -80,8 +80,8 @@ export default function AuthSupabase({
       </div>
 
       {/* Form panel */}
-      <div style={s.formPanel}>
-        <div style={s.formCard}>
+      <div className="auth-form-panel" style={s.formPanel}>
+        <div className="auth-form-card" style={s.formCard}>
           <div style={s.formHeader}>
             <h2 style={s.formTitle}>
               {mode === "login" ? "Welcome back" : "Create your account"}
@@ -163,7 +163,7 @@ export default function AuthSupabase({
             <span style={s.dividerLine} />
           </div>
 
-          <p style={s.toggleRow}>
+          <p className="auth-toggle-row" style={s.toggleRow}>
             {mode === "login" ? "Don't have an account?" : "Already have one?"}
             <button
               type="button"
