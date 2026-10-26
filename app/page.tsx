@@ -18,8 +18,23 @@ type Tab = "home" | "rhythm" | "games" | "progress" | "social" | "achievements";
 
 const supabase = createClient();
 
+const createDemoUser = (): UserData => ({
+  name: "Demo User",
+  goal: "",
+  experience: "",
+  baseline: 0,
+  xp: 120,
+  level: 1,
+  streak: 0,
+  dailyGoalXp: 50,
+  todayXp: 0,
+  lastActiveDate: new Date().toDateString(),
+  language: "en",
+  friends: [],
+});
+
 export default function App() {
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserData | null>(createDemoUser());
   const [userId, setUserId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -59,9 +74,12 @@ export default function App() {
             };
             setUser(userData);
           }
+        } else {
+          setUser(createDemoUser());
         }
       } catch (error) {
         console.error("Auth check error:", error);
+        setUser(createDemoUser());
       } finally {
         setIsLoading(false);
       }
@@ -92,8 +110,10 @@ export default function App() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    if (supabase && typeof supabase.auth?.signOut === "function") {
+      await supabase.auth.signOut();
+    }
+    setUser(createDemoUser());
     setUserId(null);
     setSessions([]);
   };
@@ -152,7 +172,7 @@ export default function App() {
   }
 
   if (!user) {
-    return <AuthSupabase onAuthSuccess={handleAuthSuccess} t={t} />;
+    setUser(createDemoUser());
   }
 
   return (
@@ -205,7 +225,7 @@ export default function App() {
       <main className="app-card" style={{ ...styles.card, animation: "fadeIn 0.3s ease-out" }}>
         {showReward && <RewardAnimation xpGained={lastXpGain} />}
         {tab === "home" ? (
-          <Dashboard sessions={sessions} user={user} onStartPractice={() => setTab("rhythm")} />
+          <Dashboard sessions={sessions} user={user || createDemoUser()} onStartPractice={() => setTab("rhythm")} />
         ) : tab === "rhythm" ? (
           <RhythmLab addSession={addSession} />
         ) : tab === "games" ? (
@@ -213,9 +233,9 @@ export default function App() {
         ) : tab === "progress" ? (
           <Progress sessions={sessions} onStartPractice={() => setTab("rhythm")} />
         ) : tab === "social" ? (
-          <Social user={user} />
+          <Social user={user || createDemoUser()} />
         ) : (
-          <Achievements user={user} sessionsCount={sessions.length} />
+          <Achievements user={user || createDemoUser()} sessionsCount={sessions.length} />
         )}
       </main>
 
