@@ -12,7 +12,7 @@ export default function Progress({
   sessions: Session[];
   onStartPractice?: () => void;
 }) {
-  const last30 = sessions.slice(-30);
+  const last30 = sessions.filter(s => s.analysis?.measured && new Date(s.date).getTime() >= Date.now() - 30 * 864e5);
   const score = last30.length
     ? Math.round(
         last30.reduce((a, s) => a + (s.analysis?.confidenceScore ?? 0), 0) /
@@ -33,10 +33,10 @@ export default function Progress({
       </h1>
 
       {/* Fitness score */}
-      {sessions.length > 0 ? (
+      {last30.length > 0 ? (
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <h2 style={{ color: orange, marginBottom: 16 }}>
-            Speech Fitness Score
+            Practice Score
           </h2>
           <div
             style={{
@@ -82,10 +82,9 @@ export default function Progress({
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 12 }}>📈</div>
-          <h2 style={{ fontSize: 21, marginBottom: 8 }}>Build your fitness score</h2>
+          <h2 style={{ fontSize: 21, marginBottom: 8 }}>Build your practice score</h2>
           <p style={{ maxWidth: 380, margin: "0 auto", color: T.ink3 }}>
-            Complete a practice session to establish your baseline. Your score
-            will become more useful as you practise.
+            Record with transcription enabled to see an estimated score based on pace and fillers. Timed exercises count toward XP without generating a speech score.
           </p>
           <Btn onClick={onStartPractice ?? (() => {})} style={{ marginTop: 20 }}>
             Start a practice →
@@ -105,7 +104,7 @@ export default function Progress({
               marginBottom: 32,
             }}
           >
-            <StatCard label="Avg Confidence" value={score} />
+            <StatCard label="Avg Practice Score" value={score} />
             <StatCard label="This Month" value={thisMonth} sub="sessions" />
             <StatCard label="All Time" value={sessions.length} sub="sessions" />
           </div>
@@ -148,7 +147,9 @@ export default function Progress({
                     style={{ color: orange, fontWeight: 700, marginBottom: 4 }}
                   >
                     {sess.type === "rhythm-lab" && `🎯 ${sess.drillName}`}
-                    {sess.type === "word-sprint" && "⚡ Word Sprint"}
+                    {sess.duration !== undefined && <p>Duration: {Math.round(sess.duration)}s</p>}
+              {sess.transcript && <details><summary>Transcript</summary><p>{sess.transcript}</p></details>}
+              {sess.type === "word-sprint" && "⚡ Word Sprint"}
                     {sess.type === "one-minute-pitch" && "🎤 One-Minute Pitch"}
                   </div>
                   <div style={{ fontSize: 13, color: "#888" }}>
@@ -156,24 +157,26 @@ export default function Progress({
                     {new Date(sess.date).toLocaleTimeString()}
                   </div>
                 </div>
-                {sess.analysis && (
+                {sess.analysis?.measured && (
                   <Badge color="success">
                     Score: {sess.analysis.confidenceScore}
                   </Badge>
                 )}
               </div>
 
-              {sess.analysis && sess.type !== "word-sprint" && (
+              {sess.analysis?.measured && sess.type !== "word-sprint" && (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <Badge color="info">Pace: {sess.analysis.pace} WPM</Badge>
                   <Badge color="info">
                     Fillers: {sess.analysis.fillerWords}
                   </Badge>
                   <Badge color="info">
-                    Avg Pause: {sess.analysis.avgPause}s
+                    Detected silence: {sess.analysis.avgPause === "" ? "Unavailable" : `${sess.analysis.avgPause}s`}
                   </Badge>
                 </div>
               )}
+              {sess.duration !== undefined && <p>Duration: {Math.round(sess.duration)}s</p>}
+              {sess.transcript && <details><summary>Transcript</summary><p>{sess.transcript}</p></details>}
               {sess.type === "word-sprint" && sess.wordsTyped !== undefined && (
                 <Badge color="info">Words: {sess.wordsTyped}</Badge>
               )}

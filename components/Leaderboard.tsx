@@ -1,79 +1,21 @@
 "use client";
-
-import { UserData, Friend } from "@/lib/types";
-
+import { useEffect, useState } from 'react';
+import { UserData } from '@/lib/types';
+import { getWeeklyLeaderboard } from '@/lib/auth-context';
 export default function Leaderboard({ user }: { user: UserData }) {
-  const allParticipants: (Friend | { name: string; xp: number; level: number; streak: number; isUser: boolean })[] = [
-    ...user.friends,
-    { name: user.name || "You", xp: user.xp, level: user.level, streak: user.streak, isUser: true }
-  ].sort((a, b) => b.xp - a.xp);
-
-  return (
-    <div style={styles.container}>
-      <h3 style={styles.title}>Leaderboard</h3>
-      <div style={styles.list}>
-        {allParticipants.map((p, i) => (
-          <div key={i} style={{...styles.row, ...( (p as any).isUser ? styles.userRow : {})}}>
-            <span style={styles.rank}>{i + 1}</span>
-            <span style={styles.name}>{p.name} {(p as any).isUser && "(You)"}</span>
-            <div style={styles.stats}>
-              <span>⭐ {p.level}</span>
-              <span style={styles.xp}>{p.xp} XP</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const [rows, setRows] = useState<any[]>([]);
+  const [message, setMessage] = useState('Loading weekly rankings…');
+  useEffect(() => {
+    let alive = true;
+    getWeeklyLeaderboard().then(({ leaderboard, error }) => {
+      if (!alive) return;
+      setRows(leaderboard || []);
+      setMessage(error ? 'Weekly rankings are unavailable right now.' : !leaderboard?.length ? 'Complete a signed-in session to join the weekly league.' : '');
+    });
+    return () => { alive = false; };
+  }, [user.xp]);
+  return <section className="card"><h3>Weekly leaderboard</h3>
+    {message && <p role="status">{message}</p>}
+    {rows.slice(0, 5).map((row, i) => <div key={row.profiles?.id || i} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, padding: '12px 0' }}><span>#{i + 1} {row.profiles?.username || 'Speaker'}</span><strong>{row.xp} XP</strong></div>)}
+  </section>;
 }
-
-const styles = {
-  container: {
-    background: "#fff",
-    borderRadius: 16,
-    border: "2px solid #e5e5e5",
-    padding: 20,
-    marginTop: 20,
-  } as React.CSSProperties,
-  title: {
-    fontSize: 20,
-    fontWeight: 700,
-    marginBottom: 16,
-    color: "#4b4b4b",
-  } as React.CSSProperties,
-  list: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 8,
-  },
-  row: {
-    display: "flex",
-    alignItems: "center",
-    padding: "12px 16px",
-    borderRadius: 12,
-    background: "#fff",
-    border: "2px solid transparent",
-  } as React.CSSProperties,
-  userRow: {
-    background: "#ddf4ff",
-    border: "2px solid #84d8ff",
-  } as React.CSSProperties,
-  rank: {
-    width: 24,
-    fontWeight: 700,
-    color: "#afafaf",
-  } as React.CSSProperties,
-  name: {
-    flex: 1,
-    fontWeight: 700,
-    color: "#4b4b4b",
-  } as React.CSSProperties,
-  stats: {
-    display: "flex",
-    gap: 12,
-    fontWeight: 700,
-  } as React.CSSProperties,
-  xp: {
-    color: "#1cb0f6",
-  } as React.CSSProperties,
-};
