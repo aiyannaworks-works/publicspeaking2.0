@@ -1,4 +1,5 @@
 export interface SpeechAnalysis {
+  measured?: boolean;
   confidenceScore: number;
   duration: number;
   fillerWords: number;
@@ -8,12 +9,14 @@ export interface SpeechAnalysis {
 }
 
 export interface Session {
-  id: number;
+  id: number | string;
   type: "rhythm-lab" | "word-sprint" | "one-minute-pitch";
   date: string;
   drill?: string;
   drillName?: string;
   topic?: string;
+  transcript?: string;
+  duration?: number;
   wordsTyped?: number;
   analysis?: SpeechAnalysis;
 }

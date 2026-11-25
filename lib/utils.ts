@@ -1,24 +1,14 @@
 import { SpeechAnalysis } from "./types";
 
-export function analyzeSpeech(durationSeconds: number): SpeechAnalysis {
-  const duration = durationSeconds || 30;
-  const pace = Math.floor(Math.random() * 60) + 110; // 110–170 WPM
-  const fillerWords = Math.floor(Math.random() * 12);
-  const fillerRate = ((fillerWords / (duration / 60)) * 1).toFixed(2);
-  const avgPause = (Math.random() * 1.5 + 0.3).toFixed(1);
-  const confidenceScore = Math.min(
-    100,
-    Math.max(
-      0,
-      Math.round(
-        70 +
-          (pace >= 130 && pace <= 160 ? 10 : -5) +
-          (fillerWords < 5 ? 10 : fillerWords < 10 ? 0 : -10) +
-          Math.floor(Math.random() * 10)
-      )
-    )
-  );
-  return { confidenceScore, duration, fillerWords, fillerRate, avgPause, pace };
+export function analyzeSpeech(durationSeconds: number, transcript = "", pauses: number[] = [], measuredPauses = false): SpeechAnalysis {
+  const duration = Math.max(0.1, durationSeconds);
+  const words = transcript.trim().split(/\s+/).filter(Boolean).length;
+  const pace = Math.round(words / duration * 60);
+  const fillerWords = (transcript.match(/\b(um|uh|erm|you know|basically|actually|literally|like)\b/gi) || []).length;
+  const fillerRate = (fillerWords / (duration / 60)).toFixed(2);
+  const avgPause = measuredPauses ? (pauses.length ? pauses.reduce((a, b) => a + b, 0) / pauses.length : 0).toFixed(1) : "";
+  const confidenceScore = words ? Math.max(0, Math.round(100 - Math.max(0, 110 - pace) / 2 - Math.max(0, pace - 160) / 2 - fillerWords / words * 200)) : 0;
+  return { measured: words > 0, confidenceScore, duration, fillerWords, fillerRate, avgPause, pace };
 }
 
 export const DRILLS = [
