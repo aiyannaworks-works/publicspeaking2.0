@@ -147,7 +147,7 @@ export default function App() {
     const values = [...sessionRef.current, newSession];
     applySessions(id, values); setLastXpGain(50); setShowReward(true);
     setSaveMessage(id ? "Saving to your account…" : "Saved on this device. Sign in to keep separate account progress.");
-    if (id) saveQueue.current = saveQueue.current.then(() => persistSession(id, newSession)).catch(() => { setSaveMessage("Saved on this device. Account sync failed; use Retry sync."); });
+    if (id) saveQueue.current = saveQueue.current.then(async () => { await persistSession(id, newSession); }).catch(() => { setSaveMessage("Saved on this device. Account sync failed; use Retry sync."); });
   };
   const retrySync = () => {
     const id = ownerRef.current; if (!id) return;
