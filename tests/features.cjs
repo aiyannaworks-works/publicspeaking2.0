@@ -88,3 +88,13 @@ test('database failure is returned so UI can retain and retry local session', as
 test('weekly rankings use a Monday calendar boundary', () => {
   const api = authFixture(); assert.equal(api.getWeekStart(new Date(2026, 10, 29, 12)), '2026-11-23'); assert.equal(api.getWeekStart(new Date(2026, 10, 30, 12)), '2026-11-30');
 });
+test('an unreachable account service times out instead of spinning indefinitely', async () => {
+  let cancel, cleared = false;
+  const exports = {};
+  vm.runInNewContext(compile('utils/supabase/client.ts'), {
+    exports, require: () => ({}), process: { env: {} }, AbortController,
+    setTimeout: callback => { cancel = callback; return 1; }, clearTimeout: () => { cleared = true; },
+    fetch: (_input, options) => new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(new Error('aborted')))),
+  });
+  const request = exports.timedFetch('https://example.test'); cancel(); await assert.rejects(request, /aborted/); assert.equal(cleared, true);
+});
