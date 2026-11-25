@@ -140,70 +140,29 @@ export async function updateUserProfile(userId: string, updates: any) {
   }
 }
 
-export async function addSessionRecord(
-  userId: string,
-  sessionData: {
-    type: string;
-    drill_id?: string;
-    drill_name?: string;
-    transcript?: string;
-    analysis?: any;
-    xp_gained: number;
-  }
-) {
+export async function addSessionRecord(userId: string, sessionData: {
+  id: string; created_at: string; type: string; drill_id?: string; drill_name?: string;
+  transcript?: string; analysis?: any; xp_gained: number;
+}) {
   try {
-    const { data, error } = await supabase
-      .from("sessions")
-      .insert({
-        user_id: userId,
-        ...sessionData,
-      })
-      .select()
-      .single();
-
+    // Stable IDs make retrying a saved session idempotent.
+    const { data, error } = await supabase.from("sessions").upsert({ user_id: userId, ...sessionData }, { onConflict: "id" }).select().single();
     if (error) throw error;
-
-    // Update user XP and weekly XP
-    const { profile } = await getCurrentUserProfile(userId);
-    if (profile) {
-      const newXp = profile.xp + sessionData.xp_gained;
-      const newLevel = Math.floor(newXp / 500) + 1;
-
-      // Update profile
-      await updateUserProfile(userId, {
-        xp: newXp,
-        level: newLevel,
-      });
-
-      // Update weekly XP
-      const weekStart = getWeekStart(new Date());
-      const { data: weeklyData } = await supabase
-        .from("weekly_xp")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("week_start_date", weekStart)
-        .single();
-
-      if (weeklyData) {
-        await supabase
-          .from("weekly_xp")
-          .update({ xp: weeklyData.xp + sessionData.xp_gained })
-          .eq("user_id", userId)
-          .eq("week_start_date", weekStart);
-      } else {
-        await supabase.from("weekly_xp").insert({
-          user_id: userId,
-          week_start_date: weekStart,
-          xp: sessionData.xp_gained,
-        });
-      }
-    }
-
+    const { data: rows, error: historyError } = await supabase.from("sessions").select("xp_gained, created_at").eq("user_id", userId);
+    if (historyError) throw historyError;
+    const xp = (rows || []).reduce((sum: number, row: any) => sum + (row.xp_gained || 0), 0);
+    const dates = new Set((rows || []).map((r: any) => new Date(r.created_at).toDateString()));
+    const today = new Date(); let streak = 0;
+    if (!dates.has(today.toDateString())) today.setDate(today.getDate() - 1);
+    while (dates.has(today.toDateString())) { streak++; today.setDate(today.getDate() - 1); }
+    const week = getWeekStart(new Date());
+    const weeklyXp = (rows || []).filter((r: any) => getWeekStart(new Date(r.created_at)) === week).reduce((sum: number, r: any) => sum + (r.xp_gained || 0), 0);
+    const { error: profileError } = await updateUserProfile(userId, { xp, level: Math.floor(xp / 500) + 1, streak, last_active_date: new Date().toLocaleDateString('en-CA') });
+    if (profileError) throw profileError;
+    const { error: weeklyError } = await supabase.from("weekly_xp").upsert({ user_id: userId, week_start_date: week, xp: weeklyXp }, { onConflict: "user_id,week_start_date" });
+    if (weeklyError) throw weeklyError;
     return { session: data, error: null };
-  } catch (error) {
-    console.error("Error adding session:", error);
-    return { session: null, error };
-  }
+  } catch (error) { return { session: null, error }; }
 }
 
 export async function getWeeklyLeaderboard(weekStart?: string) {
@@ -356,5 +315,6 @@ export function getWeekStart(date: Date): string {
   const d = new Date(date);
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-  return new Date(d.setDate(diff)).toISOString().split("T")[0];
+  d.setDate(diff);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }

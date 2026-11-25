@@ -14,7 +14,7 @@ export default function Dashboard({
   onStartPractice?: () => void;
 }) {
   const xpProgress = Math.min((user.todayXp / user.dailyGoalXp) * 100, 100);
-  const last30 = sessions.slice(-30);
+  const last30 = sessions.filter(s => s.analysis?.measured && new Date(s.date).getTime() >= Date.now() - 30 * 864e5);
   const avgConfidence = last30.length
     ? Math.round(
         last30.reduce((a, s) => a + (s.analysis?.confidenceScore ?? 0), 0) /
@@ -65,7 +65,7 @@ export default function Dashboard({
       {/* ── Stat grid ── */}
       <div style={s.statGrid}>
         <StatCard label="Streak"         value={`${user.streak}d`}    sub="Keep it going 🔥" accent="orange" />
-        <StatCard label="Speech Fitness" value={avgConfidence || "—"} sub="30-day avg"        accent="green" />
+        <StatCard label="Practice Score" value={avgConfidence || "—"} sub="30-day avg"        accent="green" />
         <StatCard label="This Week"      value={thisWeek}             sub="sessions"          accent="orange" />
         <StatCard label="Total XP"       value={user.xp}              sub="all time 💎"       accent="green" />
       </div>
@@ -91,9 +91,9 @@ export default function Dashboard({
           <h4 style={{ color: T.greenDark, fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
             📊 Recent Insights
           </h4>
-          <FeedbackRow label="Your pace is improving"    value="+12%"   color="success" />
-          <FeedbackRow label="Filler words decreasing"   value="−18%"   color="success" />
-          <FeedbackRow label="Confidence trend"          value="Upward"  color="success" />
+          <FeedbackRow label="Latest estimated pace"    value={sessions.filter(s => s.analysis?.measured).at(-1)?.analysis ? `${sessions.filter(s => s.analysis?.measured).at(-1)!.analysis!.pace} WPM` : "Not measured"}   color="success" />
+          <FeedbackRow label="Latest transcript fillers"   value={String(sessions.filter(s => s.analysis?.measured).at(-1)?.analysis?.fillerWords ?? "Not measured")}   color="success" />
+          <FeedbackRow label="Completed sessions"          value={String(sessions.length)}  color="success" />
         </InfoCard>
       ) : (
         <div style={s.emptyState}>

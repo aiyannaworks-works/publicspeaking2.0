@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Session } from "@/lib/types";
-import { PITCH_TOPICS, WORD_BANK, analyzeSpeech } from "@/lib/utils";
-import { Btn, RecordButton, TimerDisplay } from "./ui";
+import { PITCH_TOPICS, WORD_BANK } from "@/lib/utils";
+import { Btn } from "./ui";
+import { SpeechExercise } from "./RhythmLab";
 
 const orange = "#d97e3a";
 const green = "#6ba045";
@@ -29,6 +30,7 @@ export default function DailyGames({
   const [timeLeft, setTimeLeft] = useState(60);
   const [recTime, setRecTime] = useState(0);
   const [topic, setTopic] = useState("");
+  const sprintSaved = useRef(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const reset = () => {
@@ -42,22 +44,18 @@ export default function DailyGames({
 
   /* ── Word Sprint ── */
   const startSprint = () => {
+    sprintSaved.current = false;
     setPhase("playing");
     setWordsCount(0);
     setTimeLeft(60);
     setWord(WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)]);
-    timer.current = setInterval(
-      () =>
-        setTimeLeft((t) => {
-          if (t <= 1) {
-            clearInterval(timer.current!);
-            setPhase("done");
-            return 0;
-          }
-          return t - 1;
-        }),
-      1000
-    );
+    if (timer.current) clearInterval(timer.current);
+    const deadline = Date.now() + 60000;
+    timer.current = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (!remaining) { clearInterval(timer.current!); setPhase("done"); }
+    }, 200);
   };
 
   const nextWord = () => {
@@ -66,52 +64,22 @@ export default function DailyGames({
   };
 
   useEffect(() => {
-    if (phase === "done" && game === "sprint") {
+    if (phase === "done" && game === "sprint" && !sprintSaved.current) {
+      sprintSaved.current = true;
       addSession({
         type: "word-sprint",
         wordsTyped: wordsCount,
-        analysis: { confidenceScore: Math.min(100, wordsCount * 2), duration: 60, fillerWords: 0, fillerRate: "0", avgPause: "0", pace: 0 },
+        duration: 60,
         date: new Date().toISOString(),
       });
     }
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Pitch ── */
+  useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
+
   const startPitch = () => {
     setTopic(PITCH_TOPICS[Math.floor(Math.random() * PITCH_TOPICS.length)]);
     setPhase("ready");
-  };
-
-  const togglePitch = () => {
-    if (phase === "ready") {
-      setPhase("recording");
-      setRecTime(0);
-      timer.current = setInterval(
-        () =>
-          setRecTime((t) => {
-            if (t >= 60) {
-              clearInterval(timer.current!);
-              endPitch(60);
-              return 60;
-            }
-            return t + 1;
-          }),
-        1000
-      );
-    } else {
-      clearInterval(timer.current!);
-      endPitch(recTime);
-    }
-  };
-
-  const endPitch = (duration: number) => {
-    setPhase("complete");
-    addSession({
-      type: "one-minute-pitch",
-      topic,
-      analysis: analyzeSpeech(duration),
-      date: new Date().toISOString(),
-    });
   };
 
   /* ── Game list ── */
@@ -167,8 +135,7 @@ export default function DailyGames({
             ⚡ Word Sprint
           </h1>
           <p style={{ color: "#666", marginBottom: 28 }}>
-            Say as many words as you can in 60 seconds. This builds mental
-            agility for speaking.
+            Say each displayed word aloud, then tap Got it to count it. This is a self-counted vocabulary drill; it does not use your microphone.
           </p>
           <div style={{ textAlign: "center" }}>
             <Btn onClick={startSprint}>Start Game</Btn>
@@ -191,7 +158,8 @@ export default function DailyGames({
           </div>
           <div
             style={{
-              fontSize: 48,
+              fontSize: "clamp(24px, 7vw, 48px)",
+              overflowWrap: "anywhere",
               fontWeight: 700,
               padding: 36,
               color: orange,
@@ -234,7 +202,7 @@ export default function DailyGames({
             margin: "16px 0",
           }}
         >
-          You said {wordsCount} words!
+          You marked {wordsCount} words complete!
         </div>
         <div
           style={{
@@ -259,90 +227,7 @@ export default function DailyGames({
     );
   }
 
-  /* ── Pitch screens ── */
-  if (phase === "ready")
-    return (
-      <div>
-        <Btn variant="secondary" onClick={reset}>
-          ← Back
-        </Btn>
-        <h1 style={{ fontSize: 26, fontWeight: 700, margin: "12px 0 16px" }}>
-          🎤 One-Minute Pitch
-        </h1>
-        <div
-          style={{
-            background: "#f8f9fa",
-            padding: 24,
-            borderRadius: 12,
-            marginBottom: 20,
-            borderLeft: `4px solid ${orange}`,
-          }}
-        >
-          <div style={{ color: orange, fontWeight: 600, marginBottom: 8 }}>
-            Your Topic:
-          </div>
-          <div style={{ fontSize: 24, fontWeight: 700 }}>{topic}</div>
-        </div>
-        <p style={{ color: "#666", marginBottom: 24 }}>
-          You have 60 seconds to deliver a compelling pitch. Click Start when
-          ready!
-        </p>
-        <div style={{ textAlign: "center" }}>
-          <Btn onClick={togglePitch}>Start Recording</Btn>
-        </div>
-      </div>
-    );
-
-  if (phase === "recording")
-    return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: 36,
-          background: "#f8f9fa",
-          borderRadius: 12,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 52,
-            fontWeight: 700,
-            color: orange,
-            marginBottom: 20,
-          }}
-        >
-          {60 - recTime}s
-        </div>
-        <RecordButton recording={true} onClick={togglePitch} />
-        <TimerDisplay seconds={recTime} />
-      </div>
-    );
-
-  // complete
-  return (
-    <div style={{ textAlign: "center" }}>
-      <h1 style={{ color: orange, marginBottom: 16 }}>Pitch Complete! 🎉</h1>
-      <div
-        style={{
-          padding: 24,
-          background: "#fff9f0",
-          borderRadius: 12,
-          marginBottom: 20,
-        }}
-      >
-        <p style={{ fontSize: 17, marginBottom: 8 }}>
-          Great job delivering your pitch on: <strong>{topic}</strong>
-        </p>
-        <p style={{ color: "#666" }}>
-          Your session has been saved to your progress dashboard!
-        </p>
-      </div>
-      <Btn onClick={reset}>Back to Games</Btn>
-      <Btn variant="secondary" onClick={startPitch}>
-        Try Another Topic
-      </Btn>
-    </div>
-  );
+  return <SpeechExercise title="One-Minute Pitch" prompt={topic} type="one-minute-pitch" maxSeconds={60} addSession={addSession} onBack={reset} />;
 }
 
 function GameCard({

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Session, UserData } from "@/lib/types";
 import { getTranslation, Language } from "@/lib/translations";
-import { getCurrentUserProfile, getWeeklyLeaderboard, addSessionRecord, getWeekStart } from "@/lib/auth-context";
+import { getCurrentUserProfile, addSessionRecord, getFriendsList } from "@/lib/auth-context";
 import AuthSupabase from "@/components/AuthSupabase";
 import Dashboard from "@/components/Dashboard";
 import RhythmLab from "@/components/RhythmLab";
@@ -12,6 +12,7 @@ import DailyGames from "@/components/DailyGames";
 import Progress from "@/components/Progress";
 import Social from "@/components/Social";
 import Achievements from "@/components/Achievements";
+import { Btn } from "@/components/ui";
 import { RewardAnimation } from "@/components/RewardAnimation";
 
 type Tab = "home" | "rhythm" | "games" | "progress" | "social" | "achievements";
@@ -19,11 +20,11 @@ type Tab = "home" | "rhythm" | "games" | "progress" | "social" | "achievements";
 const supabase = createClient();
 
 const createDemoUser = (): UserData => ({
-  name: "Demo User",
+  name: "Guest Speaker",
   goal: "",
   experience: "",
   baseline: 0,
-  xp: 120,
+  xp: 0,
   level: 1,
   streak: 0,
   dailyGoalXp: 50,
@@ -46,108 +47,113 @@ export default function App() {
 
   const t = (key: string) => getTranslation(language, key);
 
-  // Check if user is logged in on mount
+  const [showAuth, setShowAuth] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const sessionRef = useRef<Session[]>([]);
+  const saveQueue = useRef(Promise.resolve());
+  const ownerRef = useRef<string | null>(null);
+  const storageKey = (id: string | null) => `articulate:sessions:v2:${id || "guest"}`;
+  const readLocal = (id: string | null): Session[] => {
+    try {
+      const value = JSON.parse(localStorage.getItem(storageKey(id)) || "[]");
+      return Array.isArray(value) ? value.filter(s => s && s.id && s.date && ["rhythm-lab", "word-sprint", "one-minute-pitch"].includes(s.type)) : [];
+    } catch { return []; }
+  };
+  const cache = (id: string | null, values: Session[]) => {
+    try { localStorage.setItem(storageKey(id), JSON.stringify(values)); }
+    catch { setSaveMessage("Browser storage is unavailable. Keep this tab open until your session is saved to your account."); }
+  };
+  const applySessions = (id: string | null, values: Session[]) => {
+    if (ownerRef.current !== id) return;
+    sessionRef.current = values; setSessions(values); cache(id, values);
+    const today = new Date().toDateString();
+    const days = new Set(values.map(s => new Date(s.date).toDateString()));
+    let streak = 0; const day = new Date();
+    if (!days.has(day.toDateString())) day.setDate(day.getDate() - 1);
+    while (days.has(day.toDateString())) { streak++; day.setDate(day.getDate() - 1); }
+    setUser(prev => {
+      const xp = values.length * 50;
+      return { ...(prev || createDemoUser()), xp, level: Math.floor(xp / 500) + 1, streak,
+        todayXp: values.filter(s => new Date(s.date).toDateString() === today).length * 50 };
+    });
+  };
+  const loadProgress = async (id: string | null) => {
+    const local = readLocal(id); applySessions(id, local);
+    if (!id) return;
+    const { data, error } = await supabase.from("sessions").select("*").eq("user_id", id).order("created_at", { ascending: true });
+    if (ownerRef.current !== id) return;
+    if (error) { setSaveMessage("Could not load account history. Showing this device's saved sessions. Try again shortly."); return; }
+    const remote: Session[] = (data || []).map((row: any) => ({
+      id: row.id, type: row.type, date: row.created_at, drill: row.drill_id,
+      drillName: row.drill_name, transcript: row.transcript || "",
+      duration: row.analysis?._session?.duration || row.analysis?.duration,
+      topic: row.analysis?._session?.topic, wordsTyped: row.analysis?._session?.wordsTyped,
+      analysis: row.analysis?.measured ? row.analysis : undefined,
+    }));
+    const remoteIds = new Set(remote.map(row => String(row.id)));
+    const pending = local.filter(row => !remoteIds.has(String(row.id)));
+    const merged = [...remote, ...pending].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    applySessions(id, merged);
+    if (pending.length) setSaveMessage("Some sessions are saved on this device and still need to sync. Use Retry sync.");
+    const { friends } = await getFriendsList(id);
+    if (ownerRef.current === id) setUser(prev => prev ? { ...prev, friends: (friends || []).map((f: any) => ({ id: f.profiles?.id, name: f.profiles?.username, xp: f.profiles?.xp || 0, level: f.profiles?.level || 1, streak: f.profiles?.streak || 0 })).filter((f: any) => f.id) } : prev);
+  };
   useEffect(() => {
-    const checkAuth = async () => {
+    let alive = true;
+    const initialize = async () => {
       try {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-
-        if (data.session?.user) {
-          setUserId(data.session.user.id);
-          const { profile } = await getCurrentUserProfile(data.session.user.id);
-          if (profile) {
-            setLanguage(profile.language || "en");
-            const userData: UserData = {
-              name: profile.full_name || "",
-              goal: "",
-              experience: "",
-              baseline: 0,
-              xp: profile.xp || 0,
-              level: profile.level || 1,
-              streak: profile.streak || 0,
-              dailyGoalXp: 50,
-              todayXp: 0,
-              lastActiveDate: profile.last_active_date || new Date().toDateString(),
-              language: profile.language || "en",
-              friends: [],
-            };
-            setUser(userData);
-          }
-        } else {
-          setUser(createDemoUser());
+        const id = data.session?.user.id || null;
+        if (!alive) return;
+        ownerRef.current = id; setUserId(id);
+        if (id) {
+          const { profile } = await getCurrentUserProfile(id);
+          if (!alive) return;
+          if (profile) { setLanguage(profile.language || "en"); setUser({ ...createDemoUser(), name: profile.full_name || profile.username || "Speaker", language: profile.language || "en" }); }
         }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setUser(createDemoUser());
-      } finally {
-        setIsLoading(false);
-      }
+        await loadProgress(id);
+      } catch { if (alive) { ownerRef.current = null; setUserId(null); await loadProgress(null); setSaveMessage("Account connection unavailable. Guest progress is saved on this device."); } }
+      finally { if (alive) setIsLoading(false); }
     };
-
-    checkAuth();
+    void initialize(); return () => { alive = false; };
   }, []);
 
-  const handleAuthSuccess = async (newUserId: string, profile: any) => {
-    setUserId(newUserId);
+  const handleAuthSuccess = async (id: string, profile: any) => {
+    ownerRef.current = id; setUserId(id); setShowAuth(false); setSaveMessage("");
     setLanguage(profile.language || "en");
-    const userData: UserData = {
-      name: profile.full_name || "",
-      goal: "",
-      experience: "",
-      baseline: 0,
-      xp: profile.xp || 0,
-      level: profile.level || 1,
-      streak: profile.streak || 0,
-      dailyGoalXp: 50,
-      todayXp: 0,
-      lastActiveDate: profile.last_active_date || new Date().toDateString(),
-      language: profile.language || "en",
-      friends: [],
-    };
-    setUser(userData);
-    setTab("home");
+    setUser({ ...createDemoUser(), name: profile.full_name || profile.username || "Speaker", language: profile.language || "en" });
+    await loadProgress(id); setTab("home");
   };
-
   const handleSignOut = async () => {
-    if (supabase && typeof supabase.auth?.signOut === "function") {
-      await supabase.auth.signOut();
-    }
-    setUser(createDemoUser());
-    setUserId(null);
-    setSessions([]);
+    const { error } = await supabase.auth.signOut();
+    if (error) { setSaveMessage("Could not sign out. Please try again."); return; }
+    ownerRef.current = null; setUserId(null); setUser(createDemoUser()); setSaveMessage("");
+    await loadProgress(null); setTab("home"); setMobileMoreOpen(false);
   };
-
-  const addSession = async (sess: Omit<Session, "id">) => {
-    if (!userId) return;
-
-    const newSession: Session = { id: Date.now(), ...sess };
-    const xpGained = 50;
-
-    setSessions((prev) => [...prev, newSession]);
-    setLastXpGain(xpGained);
-    setShowReward(true);
-
-    // Save to Supabase
-    await addSessionRecord(userId, {
-      type: sess.type,
-      drill_id: sess.type,
-      drill_name: sess.type,
-      xp_gained: xpGained,
+  const persistSession = async (id: string, sess: Session) => {
+    const { error } = await addSessionRecord(id, {
+      id: String(sess.id), created_at: sess.date, type: sess.type,
+      drill_id: sess.drill || sess.type, drill_name: sess.drillName || sess.type,
+      transcript: sess.transcript,
+      analysis: { ...sess.analysis, _session: { duration: sess.duration, topic: sess.topic, wordsTyped: sess.wordsTyped } }, xp_gained: 50,
     });
-
-    // Update local user state
-    if (user) {
-      const newTotalXp = user.xp + xpGained;
-      const newLevel = Math.floor(newTotalXp / 500) + 1;
-
-      setUser({
-        ...user,
-        xp: newTotalXp,
-        level: newLevel,
-        todayXp: user.todayXp + xpGained,
-      });
-    }
+    if (ownerRef.current === id) setSaveMessage(error ? "Saved on this device. Account sync failed; use Retry sync." : "Saved to your account.");
+    return !error;
+  };
+  const addSession = (sess: Omit<Session, "id">) => {
+    const id = ownerRef.current;
+    const newSession: Session = { id: crypto.randomUUID(), ...sess };
+    const values = [...sessionRef.current, newSession];
+    applySessions(id, values); setLastXpGain(50); setShowReward(true);
+    setSaveMessage(id ? "Saving to your account…" : "Saved on this device. Sign in to keep separate account progress.");
+    if (id) saveQueue.current = saveQueue.current.then(async () => { await persistSession(id, newSession); }).catch(() => { setSaveMessage("Saved on this device. Account sync failed; use Retry sync."); });
+  };
+  const retrySync = () => {
+    const id = ownerRef.current; if (!id) return;
+    setSaveMessage("Syncing saved sessions…");
+    const values = [...sessionRef.current];
+    saveQueue.current = saveQueue.current.then(async () => { let allSaved = true; for (const sess of values) { if (!await persistSession(id, sess)) allSaved = false; } if (ownerRef.current === id) setSaveMessage(allSaved ? "Saved to your account." : "Some sessions could not sync. They remain on this device; try again later."); }).catch(() => setSaveMessage("Account sync is unavailable. Your sessions remain on this device."));
   };
 
   const NAV: { id: Tab; label: string; shortLabel: string; icon: string }[] = [
@@ -171,9 +177,7 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    setUser(createDemoUser());
-  }
+  if (showAuth) return <div><Btn variant="secondary" onClick={() => setShowAuth(false)}>← Back to practice</Btn><AuthSupabase onAuthSuccess={handleAuthSuccess} /></div>;
 
   return (
     <div className="app-shell" style={styles.wrap}>
@@ -214,16 +218,17 @@ export default function App() {
               <option value="fr">🇫🇷 FR</option>
               <option value="de">🇩🇪 DE</option>
             </select>
-            <button onClick={handleSignOut} style={styles.signOutBtn}>
-              Sign Out
+            <button onClick={userId ? handleSignOut : () => setShowAuth(true)} style={styles.signOutBtn}>
+              {userId ? "Sign Out" : "Sign in"}
             </button>
           </div>
         )}
       </header>
 
+      {saveMessage && <p role="status" style={{ marginBottom: 16 }}>{saveMessage} {userId && <button onClick={retrySync}>Retry sync</button>}</p>}
       {/* Main content */}
       <main className="app-card" style={{ ...styles.card, animation: "fadeIn 0.3s ease-out" }}>
-        {showReward && <RewardAnimation xpGained={lastXpGain} />}
+        {showReward && <RewardAnimation key={sessions.length} xpGained={lastXpGain} />}
         {tab === "home" ? (
           <Dashboard sessions={sessions} user={user || createDemoUser()} onStartPractice={() => setTab("rhythm")} />
         ) : tab === "rhythm" ? (
@@ -233,7 +238,7 @@ export default function App() {
         ) : tab === "progress" ? (
           <Progress sessions={sessions} onStartPractice={() => setTab("rhythm")} />
         ) : tab === "social" ? (
-          <Social user={user || createDemoUser()} />
+          <Social user={user || createDemoUser()} userId={userId} onFriendsChanged={() => void loadProgress(userId)} />
         ) : (
           <Achievements user={user || createDemoUser()} sessionsCount={sessions.length} />
         )}
@@ -293,7 +298,7 @@ export default function App() {
                 <option value="de">🇩🇪 Deutsch</option>
               </select>
             </label>
-            <button className="mobile-sign-out" onClick={handleSignOut}>Sign Out</button>
+            <button className="mobile-sign-out" onClick={userId ? handleSignOut : () => { setShowAuth(true); setMobileMoreOpen(false); }}>{userId ? "Sign Out" : "Sign in"}</button>
           </div>
           <button
             className="mobile-more-backdrop"
