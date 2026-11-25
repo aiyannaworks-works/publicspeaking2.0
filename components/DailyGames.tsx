@@ -30,6 +30,7 @@ export default function DailyGames({
   const [timeLeft, setTimeLeft] = useState(60);
   const [recTime, setRecTime] = useState(0);
   const [topic, setTopic] = useState("");
+  const sprintSaved = useRef(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const reset = () => {
@@ -43,22 +44,18 @@ export default function DailyGames({
 
   /* ── Word Sprint ── */
   const startSprint = () => {
+    sprintSaved.current = false;
     setPhase("playing");
     setWordsCount(0);
     setTimeLeft(60);
     setWord(WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)]);
-    timer.current = setInterval(
-      () =>
-        setTimeLeft((t) => {
-          if (t <= 1) {
-            clearInterval(timer.current!);
-            setPhase("done");
-            return 0;
-          }
-          return t - 1;
-        }),
-      1000
-    );
+    if (timer.current) clearInterval(timer.current);
+    const deadline = Date.now() + 60000;
+    timer.current = setInterval(() => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (!remaining) { clearInterval(timer.current!); setPhase("done"); }
+    }, 200);
   };
 
   const nextWord = () => {
@@ -67,7 +64,8 @@ export default function DailyGames({
   };
 
   useEffect(() => {
-    if (phase === "done" && game === "sprint") {
+    if (phase === "done" && game === "sprint" && !sprintSaved.current) {
+      sprintSaved.current = true;
       addSession({
         type: "word-sprint",
         wordsTyped: wordsCount,

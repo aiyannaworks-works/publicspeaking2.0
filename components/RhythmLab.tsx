@@ -59,7 +59,7 @@ export function SpeechExercise({ title, prompt, type, drill, maxSeconds = 90, ad
     <div className="card" style={{ marginBottom: 24 }}><p>{prompt}</p></div>
     {error && <p role="alert" style={{ color: '#b3261e', marginBottom: 16 }}>{error}</p>}
     {phase === 'ready' && <div>
-      <p style={{ marginBottom: 16 }}>Record up to {maxSeconds} seconds, then listen back. Audio stays on this device and is not uploaded.</p>
+      <p style={{ marginBottom: 16 }}>Record up to {maxSeconds} seconds, then listen back. Audio stays on this device and is not uploaded. Playback is available until you leave this exercise.</p>
       <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 20 }}>
         <input type="checkbox" checked={transcribe} onChange={e => setTranscribe(e.target.checked)} />
         <span>Enable English live transcription and feedback. Your browser may send speech to its transcription service. Transcript and metrics are saved with your session.</span>

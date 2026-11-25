@@ -104,7 +104,7 @@ export default function Progress({
               marginBottom: 32,
             }}
           >
-            <StatCard label="Avg Practice Score" value={score} />
+            <StatCard label="Avg Practice Score" value={last30.length ? score : "—"} />
             <StatCard label="This Month" value={thisMonth} sub="sessions" />
             <StatCard label="All Time" value={sessions.length} sub="sessions" />
           </div>
@@ -147,9 +147,7 @@ export default function Progress({
                     style={{ color: orange, fontWeight: 700, marginBottom: 4 }}
                   >
                     {sess.type === "rhythm-lab" && `🎯 ${sess.drillName}`}
-                    {sess.duration !== undefined && <p>Duration: {Math.round(sess.duration)}s</p>}
-              {sess.transcript && <details><summary>Transcript</summary><p>{sess.transcript}</p></details>}
-              {sess.type === "word-sprint" && "⚡ Word Sprint"}
+                    {sess.type === "word-sprint" && "⚡ Word Sprint"}
                     {sess.type === "one-minute-pitch" && "🎤 One-Minute Pitch"}
                   </div>
                   <div style={{ fontSize: 13, color: "#888" }}>
