@@ -88,7 +88,8 @@ export class AudioRecorder {
         recorder.onstop = () => resolve(new Blob(this.chunks, { type: recorder.mimeType }));
         recorder.onerror = () => reject(new Error('The browser could not finish the recording. Please try again.'));
       });
-      this.recognition?.stop(); recorder.stop();
+      try { this.recognition?.stop(); } catch { this.endRecognition(); }
+      recorder.stop();
       const blob = await audio;
       if (this.recognition) await Promise.race([this.recognitionEnded, new Promise(resolve => setTimeout(resolve, 1800))]);
       if (!blob.size) throw new Error('No audio was captured. Check your microphone and try again.');
